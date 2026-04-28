@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PseudoCode Quest — CIE IGCSE Revision</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#0a0c10;--bg1:#111318;--bg2:#181b23;--bg3:#1f2330;--bg4:#252a38;
+  --border:#272d3d;--border2:#343d55;--border3:#424e6a;
+  --text:#dde3f0;--text2:#7d8aA0;--text3:#3d4560;
+  --accent:#00f5a0;--accent2:#00c8c8;--accentd:#00a875;
+  --purple:#c084fc;--coral:#f87171;--amber:#fbbf24;--blue:#60a5fa;--pink:#f472b6;--orange:#fb923c;
+  --kw:#c084fc;--str:#fbbf24;--vr:#60a5fa;--op:#34d399;--cm:#3d4560;
+  --r:10px;--rl:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'Syne',sans-serif;background:var(--bg0);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.008) 3px,rgba(255,255,255,0.008) 4px);pointer-events:none;z-index:9999}
+
+/* ─── SCREENS ─── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* ══════════════════════════════════════
+   HOME SCREEN
+══════════════════════════════════════ */
+#home{background:var(--bg0);position:relative;overflow:hidden}
+.home-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.25;pointer-events:none}
+.home-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(0,245,160,0.06) 0%,transparent 70%);pointer-events:none}
+.home-inner{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:80px 24px 60px}
+.home-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);border-radius:20px;padding:5px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--accent);margin-bottom:32px;animation:fadeUp .6s ease both}
+.home-title{font-size:clamp(42px,7vw,80px);font-weight:800;line-height:1.05;margin-bottom:20px;animation:fadeUp .6s .1s ease both}
+.home-title .t1{color:var(--text)}
+.home-title .t2{color:var(--accent);display:block}
+.home-sub{font-size:17px;color:var(--text2);max-width:520px;line-height:1.7;margin-bottom:48px;font-weight:400;animation:fadeUp .6s .2s ease both}
+.home-stats{display:flex;gap:32px;margin-bottom:56px;animation:fadeUp .6s .3s ease both}
+.stat{display:flex;flex-direction:column;gap:4px}
+.stat-num{font-size:28px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace}
+.stat-label{font-size:12px;color:var(--text2)}
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;animation:fadeUp .6s .4s ease both}
+.mod-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--rl);padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.mod-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(255,255,255,0.02));pointer-events:none}
+.mod-card:hover{border-color:var(--border3);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.4)}
+.mod-card.locked{opacity:.45;cursor:not-allowed}
+.mod-card.locked:hover{transform:none;box-shadow:none}
+.mod-card.completed{border-color:rgba(0,245,160,0.3)}
+.mod-num{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-bottom:8px}
+.mod-icon{font-size:26px;margin-bottom:10px}
+.mod-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px}
+.mod-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.mod-status{margin-top:14px;display:flex;align-items:center;justify-content:space-between}
+.mod-xp{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
+.mod-stars{display:flex;gap:3px}
+.mod-star{width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:1.5}
+.mod-star.lit{fill:var(--amber);stroke:var(--amber)}
+.mod-lock{font-size:14px}
+.mod-check{color:var(--accent);font-size:14px}
+.start-btn{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--bg0);border:none;border-radius:10px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;margin-top:16px}
+.start-btn:hover{background:#20ffb0;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,245,160,0.25)}
+
+/* ─── MODULE ACCENT COLOURS ─── */
+.mod-1{--mc:var(--blue)}
+.mod-2{--mc:var(--op)}
+.mod-3{--mc:var(--purple)}
+.mod-4{--mc:var(--amber)}
+.mod-5{--mc:var(--coral)}
+.mod-6{--mc:var(--pink)}
+.mod-7{--mc:var(--orange)}
+.mod-card .mod-icon{color:var(--mc)}
+
+/* ══════════════════════════════════════
+   MODULE SCREEN (shared layout)
+══════════════════════════════════════ */
+#module-screen{background:var(--bg0)}
+.topbar{background:var(--bg1);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.back-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:5px 11px;font-size:12px;color:var(--text2);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.back-btn:hover{border-color:var(--border3);color:var(--text)}
+.topbar-logo{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.xp-wrap{display:flex;align-items:center;gap:8px}
+.xp-track{width:120px;height:6px;background:var(--bg3);border-radius:3px;border:1px solid var(--border)}
+.xp-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.xp-txt{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--accent);min-width:52px}
+.streak-pill{display:flex;align-items:center;gap:5px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--amber)}
+.hint-pill{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.hint-pill:hover{border-color:var(--amber);color:var(--amber)}
+.ref-pill{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.ref-pill:hover{border-color:var(--accent);color:var(--accent)}
+
+.mod-banner{background:var(--bg1);border-bottom:1px solid var(--border);padding:16px 20px 0}
+.mod-banner-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mod-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500;border:1px solid}
+.mod-title{font-size:20px;font-weight:700;color:var(--text)}
+.mod-subtitle{font-size:13px;color:var(--text2);margin-bottom:12px}
+.ex-tabs{display:flex;gap:0;overflow-x:auto;border-top:1px solid var(--border);margin-top:4px;scrollbar-width:none}
+.ex-tabs::-webkit-scrollbar{display:none}
+.ex-tab{padding:9px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text3);cursor:pointer;border-top:2px solid transparent;white-space:nowrap;transition:all .2s;position:relative;top:1px;flex-shrink:0}
+.ex-tab.active{border-top-color:var(--accent);color:var(--accent)}
+.ex-tab.done{color:var(--accent2)}
+.ex-tab.done::after{content:'✓';margin-left:4px;font-size:10px}
+.ex-tab.locked{color:var(--text3);cursor:not-allowed;opacity:.4}
+
+.mod-body{display:flex;max-width:1180px;margin:0 auto}
+.mod-content{flex:1;padding:24px 20px;min-width:0}
+.ref-aside{width:300px;background:var(--bg1);border-left:1px solid var(--border);padding:18px;transition:width .3s,padding .3s;overflow-y:auto;max-height:calc(100vh - 140px);position:sticky;top:140px;font-size:13px}
+.ref-aside.closed{width:0;padding:0;overflow:hidden;border:none}
+.ref-aside h3{font-size:13px;font-weight:700;color:var(--purple);font-family:'JetBrains Mono',monospace;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.ref-section{margin-bottom:14px}
+.ref-section h4{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.ref-code{background:var(--bg0);border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8}
+
+/* ─── EXERCISE SECTIONS ─── */
+.ex-section{display:none;flex-direction:column;gap:18px}
+.ex-section.active{display:flex}
+
+/* ─── CARD ─── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+.card-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;border:1px solid}
+.badge-mcq{background:rgba(96,165,250,0.1);color:var(--blue);border-color:rgba(96,165,250,0.25)}
+.badge-fill{background:rgba(251,191,36,0.08);color:var(--amber);border-color:rgba(251,191,36,0.25)}
+.badge-drag{background:rgba(52,211,153,0.08);color:var(--op);border-color:rgba(52,211,153,0.25)}
+.badge-flow{background:rgba(192,132,252,0.08);color:var(--purple);border-color:rgba(192,132,252,0.25)}
+.badge-trace{background:rgba(0,245,160,0.08);color:var(--accent);border-color:rgba(0,245,160,0.25)}
+.pts{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3)}
+.card-body{padding:18px}
+.q{font-size:14px;line-height:1.65;margin-bottom:14px;color:var(--text)}
+.q strong{color:var(--accent)}
+
+/* ─── CODE ─── */
+.cb{background:var(--bg0);border:1px solid var(--border);border-radius:7px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.9;overflow-x:auto;margin-bottom:14px}
+.ln{color:var(--text3);user-select:none;margin-right:14px;display:inline-block;min-width:18px;text-align:right;font-size:11px}
+.kw{color:var(--kw)}.sv{color:var(--str)}.vv{color:var(--vr)}.ov{color:var(--op)}.cv{color:var(--cm);font-style:italic}
+
+/* ─── MCQ ─── */
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5}
+.opt:hover{border-color:var(--border3);background:var(--bg3)}
+.opt.sel{border-color:var(--blue);background:rgba(96,165,250,0.07)}
+.opt.ok{border-color:var(--accent)!important;background:rgba(0,245,160,0.07)!important;color:var(--accent)}
+.opt.bad{border-color:var(--coral)!important;background:rgba(248,113,113,0.07)!important;color:var(--coral)}
+.opt-k{width:22px;height:22px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'JetBrains Mono',monospace;flex-shrink:0;color:var(--text2)}
+.opt.sel .opt-k{background:var(--blue);border-color:var(--blue);color:#000}
+.opt.ok .opt-k{background:var(--accent);border-color:var(--accent);color:#000}
+.opt.bad .opt-k{background:var(--coral);border-color:var(--coral);color:#000}
+
+/* ─── FILL ─── */
+.fill-block{background:var(--bg0);border:1px solid var(--border);border-radius:7px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2.2;margin-bottom:14px}
+.fill-row{display:flex;flex-wrap:wrap;align-items:center;gap:3px}
+input.blank{background:var(--bg3);border:1px solid var(--border3);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text);outline:none;transition:all .2s;border-bottom:2px solid var(--border3)}
+input.blank:focus{border-color:var(--accent);background:rgba(0,245,160,0.04)}
+input.blank.ok{border-color:var(--accent)!important;color:var(--accent);background:rgba(0,245,160,0.06)}
+input.blank.bad{border-color:var(--coral)!important;color:var(--coral);background:rgba(248,113,113,0.06)}
+
+/* ─── DRAG ─── */
+.drag-zone{min-height:56px;border:2px dashed var(--border);border-radius:8px;padding:6px;transition:all .2s;margin-bottom:10px}
+.drag-zone.ov{border-color:var(--accent);background:rgba(0,245,160,0.03)}
+.drag-zone-lbl{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:5px}
+.di{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;cursor:grab;font-family:'JetBrains Mono',monospace;font-size:12.5px;display:flex;align-items:center;gap:8px;margin-bottom:3px;transition:all .18s;user-select:none;line-height:1.5}
+.di:hover{border-color:var(--border3);background:var(--bg3)}
+.di.dragging{opacity:.35;cursor:grabbing}
+.di.ok{border-color:rgba(0,245,160,0.5);background:rgba(0,245,160,0.05)}
+.di.bad{border-color:rgba(248,113,113,0.5);background:rgba(248,113,113,0.05)}
+.dh{color:var(--text3);font-size:11px;flex-shrink:0}
+
+/* ─── TRACE ─── */
+.tt{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12.5px}
+.tt th{background:var(--bg2);border:1px solid var(--border);padding:8px 10px;color:var(--text2);font-weight:600;text-align:center;font-size:11px}
+.tt td{border:1px solid var(--border);padding:0}
+.tt td input{background:transparent;border:none;width:100%;padding:7px 10px;text-align:center;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:background .2s}
+.tt td input:focus{background:rgba(0,245,160,0.04)}
+.tt td.ok{background:rgba(0,245,160,0.07);border-color:rgba(0,245,160,0.3)}
+.tt td.bad{background:rgba(248,113,113,0.07);border-color:rgba(248,113,113,0.3)}
+.tt td.ok input{color:var(--accent)}
+.tt td.bad input{color:var(--coral)}
+.tt td.static{padding:7px 10px;text-align:center;color:var(--text2)}
+
+/* ─── FEEDBACK ─── */
+.fb{margin-top:12px;padding:11px 14px;border-radius:7px;font-size:13px;line-height:1.6;display:none}
+.fb.on{display:block;animation:slideUp .22s ease}
+.fb.ok{background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);color:var(--accent)}
+.fb.bad{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);color:var(--coral)}
+.fb.hint{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);color:var(--amber)}
+.fb .ex{color:var(--text);font-size:12px;margin-top:5px;opacity:.85}
+@keyframes slideUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Syne',sans-serif;transition:all .18s}
+.btn-p{background:var(--accent);color:#000}
+.btn-p:hover{background:#20ffb0;transform:translateY(-1px)}
+.btn-s{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.btn-s:hover{border-color:var(--border3);color:var(--text)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+.btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;top:62px;right:20px;background:var(--bg1);border:1px solid var(--accent);border-radius:9px;padding:9px 14px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);z-index:9000;transform:translateX(140%);transition:transform .38s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.on{transform:translateX(0)}
+
+/* ─── COMPLETION ─── */
+.comp{display:none;text-align:center;padding:48px 20px}
+.comp.on{display:block}
+.comp-xp{font-size:56px;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace;line-height:1}
+.comp-lbl{font-size:13px;color:var(--text2);margin:8px 0 20px}
+.comp-stars{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.comp-star{width:38px;height:38px;stroke:var(--text3);fill:none;stroke-width:1.5;transition:all .4s}
+.comp-star.lit{fill:var(--amber);stroke:var(--amber);transform:scale(1.15)}
+.comp-msg{font-size:14px;color:var(--text2);max-width:380px;margin:0 auto 28px;line-height:1.7}
+
+/* ─── FLOWCHART ─── */
+.fc-wrap{position:relative;border:1px solid var(--border);border-radius:8px;background:var(--bg0);overflow:hidden}
+.fc-svg{position:absolute;inset:0;width:100%;pointer-events:none}
+.fc-node{position:absolute;display:flex;align-items:center;justify-content:center}
+.fc-rect{background:var(--bg2);border:1px solid var(--border3);border-radius:5px}
+.fc-diamond-wrap{background:var(--bg2);border:1px solid rgba(192,132,252,0.4);transform:rotate(45deg)}
+.fc-oval{background:var(--bg2);border:1px solid var(--border3);border-radius:50%}
+.fc-text{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);pointer-events:none}
+.fc-inp{background:transparent;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);outline:none;text-align:center;width:100%}
+.fc-inp.ok{color:var(--accent)}
+.fc-inp.bad{color:var(--coral)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════ HOME ════════════════════ -->
+<div id="home" class="screen active">
+  <div class="home-grid"></div>
+  <div class="home-glow"></div>
+  <div class="home-inner">
+    <div class="home-badge">⚡ CIE IGCSE Computer Science 0478</div>
+    <h1 class="home-title">
+      <span class="t1">Master</span>
+      <span class="t2">Pseudocode.</span>
+    </h1>
+    <p class="home-sub">7 interactive modules. Drag-and-drop, fill-in-the-blanks, trace tables, and flowcharts — everything you need to ace Paper 2.</p>
+    <div class="home-stats">
+      <div class="stat"><span class="stat-num">7</span><span class="stat-label">Modules</span></div>
+      <div class="stat"><span class="stat-num">35+</span><span class="stat-label">Exercises</span></div>
+      <div class="stat"><span class="stat-num">700</span><span class="stat-label">XP to earn</span></div>
+    </div>
+    <div class="module-grid" id="home-grid"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ MODULE SCREEN ════════════════════ -->
+<div id="module-screen" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goHome()">← Home</button>
+      <span class="topbar-logo">pseudoquest</span>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-pill">🔥 <span id="streak">3</span></div>
+      <div class="xp-wrap">
+        <span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2)">XP</span>
+        <div class="xp-track"><div class="xp-fill" id="xp-fill" style="background:linear-gradient(90deg,var(--accent2),var(--accent))"></div></div>
+        <span class="xp-txt" id="xp-txt">0/120</span>
+      </div>
+      <button class="hint-pill" onclick="triggerHint()">💡 Hint (−5)</button>
+      <button class="ref-pill" id="ref-btn" onclick="toggleRef()">// ref</button>
+    </div>
+  </div>
+  <div class="mod-banner" id="mod-banner">
+    <div class="mod-banner-top">
+      <span class="mod-tag" id="mod-tag-el"></span>
+      <div>
+        <div class="mod-title" id="mod-title-el"></div>
+        <div class="mod-subtitle" id="mod-sub-el"></div>
+      </div>
+    </div>
+    <div class="ex-tabs" id="ex-tabs"></div>
+  </div>
+  <div class="mod-body">
+    <div class="mod-content" id="mod-content"></div>
+    <aside class="ref-aside closed" id="ref-aside"></aside>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// GLOBAL STATE
+// ══════════════════════════════════════
+const G = {
+  xp: 0,
+  maxXp: 0,
+  currentMod: null,
+  currentEx: 0,
+  exDone: {},       // mod -> set of done ex indices
+  modDone: {},      // mod -> bool
+  modXp: {},        // mod -> xp earned
+  exState: {},      // ephemeral per-exercise
+  dragged: null,
+  refOpen: false,
+};
+
+function $id(id){return document.getElementById(id)}
+function norm(s){return String(s).trim().toUpperCase().replace(/\s+/g,' ')}
+function addXP(n){
+  G.xp=Math.min(G.xp+n,G.maxXp);
+  const pct=G.maxXp>0?(G.xp/G.maxXp*100):0;
+  $id('xp-fill').style.width=pct+'%';
+  $id('xp-txt').textContent=G.xp+'/'+G.maxXp;
+  toast('+'+n+' XP ✦');
+}
+function toast(msg){
+  const t=$id('toast');
+  t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2000);
+}
+function fb(id,type,html){
+  const el=$id(id);
+  el.className='fb on '+type;
+  el.innerHTML=html;
+}
+function toggleRef(){
+  G.refOpen=!G.refOpen;
+  const a=$id('ref-aside');
+  a.classList.toggle('closed',!G.refOpen);
+  $id('ref-btn').style.color=G.refOpen?'var(--accent)':'';
+}
+function triggerHint(){
+  const mod=G.currentMod;
+  if(!mod)return;
+  const ex=mod.exercises[G.currentEx];
+  if(!ex||!ex.hint)return;
+  if(G.xp>=5)G.xp-=5;
+  $id('xp-fill').style.width=(G.xp/G.maxXp*100)+'%';
+  $id('xp-txt').textContent=G.xp+'/'+G.maxXp;
+  const fbEl=document.querySelector('.fb');
+  if(fbEl){fbEl.className='fb on hint';fbEl.innerHTML='<strong>Hint:</strong> '+ex.hint;}
+}
+
+// ══════════════════════════════════════
+// MODULE DEFINITIONS
+// ══════════════════════════════════════
+const MODULES = [
+
+// ── MOD 1 ──────────────────────────────
+{
+  id:'m1',num:1,icon:'📦',
+  name:'Variables & Data Types',
+  desc:'DECLARE, CONSTANT, data types, assignment',
+  color:'var(--blue)',
+  maxXp:80,
+  ref:`<h3>// variables reference</h3>
+<div class="ref-section"><h4>Data Types</h4><div class="ref-code"><span style="color:var(--kw)">INTEGER</span>  whole number<br><span style="color:var(--kw)">REAL</span>     fractional<br><span style="color:var(--kw)">CHAR</span>     single char<br><span style="color:var(--kw)">STRING</span>   text<br><span style="color:var(--kw)">BOOLEAN</span>  TRUE/FALSE</div></div>
+<div class="ref-section"><h4>Declare Variable</h4><div class="ref-code"><span style="color:var(--kw)">DECLARE</span> &lt;id&gt; : &lt;type&gt;</div></div>
+<div class="ref-section"><h4>Declare Constant</h4><div class="ref-code"><span style="color:var(--kw)">CONSTANT</span> &lt;id&gt; ← &lt;value&gt;</div></div>
+<div class="ref-section"><h4>Assignment</h4><div class="ref-code">&lt;id&gt; ← &lt;value&gt;</div></div>
+<div class="ref-section"><h4>Identifier Rules</h4><div class="ref-code" style="color:var(--text2);font-size:10px">• PascalCase (e.g. FirstName)<br>• Letters + digits only<br>• Must start with capital<br>• Case-insensitive<br>• No underscore or spaces</div></div>`,
+  exercises:[
+    // 1.1 MCQ x3
+    {
+      type:'mcq',label:'MCQ — data types',xp:10,
+      hint:'REAL is used for numbers with a fractional part. INTEGER is whole numbers only.',
+      questions:[
+        {q:'Which data type should be used to store a student\'s <strong>average exam score</strong> (e.g. 73.5)?',
+         opts:['INTEGER','REAL','STRING','BOOLEAN'],correct:'B',
+         expl:'REAL is used for numbers that can have a fractional part. 73.5 has a decimal so REAL is correct. INTEGER can only store whole numbers.'},
+        {q:'A variable stores whether a game is over or not. Which data type is correct?',
+         opts:['INTEGER','STRING','BOOLEAN','CHAR'],correct:'C',
+         expl:'BOOLEAN stores logical TRUE or FALSE values. "Is the game over?" is a yes/no question, so BOOLEAN is the right choice.'},
+        {q:'Which identifier is written correctly according to CIE rules?',
+         opts:['first_name','FirstName','firstname','FIRST NAME'],correct:'B',
+         expl:'CIE identifiers use PascalCase — each new word starts with a capital. No underscores, spaces, or all-lowercase. FirstName is correct.'},
+      ]
+    },
+    // 1.2 Fill
+    {
+      type:'fill',label:'Fill — declarations',xp:20,
+      hint:'DECLARE uses a colon. CONSTANT uses the arrow ← and only literal values.',
+      render:'fill_m1'
+    },
+    // 1.3 Drag
+    {
+      type:'drag',label:'Drag — build a program',xp:25,
+      hint:'Declarations come first. Then the assignment. Then OUTPUT.',
+      render:'drag_m1'
+    },
+    // 1.4 Trace
+    {
+      type:'trace',label:'Trace — assignments',xp:25,
+      hint:'Follow each ← arrow: the right-hand side is evaluated first, then stored in the variable on the left.',
+      render:'trace_m1'
+    },
+  ]
+},
+
+// ── MOD 2 ──────────────────────────────
+{
+  id:'m2',num:2,icon:'🔢',
+  name:'Arithmetic & Functions',
+  desc:'Operators, MOD, DIV, string functions, ROUND',
+  color:'var(--op)',
+  maxXp:90,
+  ref:`<h3>// arithmetic reference</h3>
+<div class="ref-section"><h4>Arithmetic</h4><div class="ref-code">+  addition<br>-  subtraction<br>*  multiplication<br>/  division<br>^  power</div></div>
+<div class="ref-section"><h4>Integer Division</h4><div class="ref-code"><span style="color:var(--kw)">DIV</span>(a,b) → quotient<br><span style="color:var(--kw)">MOD</span>(a,b) → remainder</div></div>
+<div class="ref-section"><h4>String Functions</h4><div class="ref-code"><span style="color:var(--kw)">LENGTH</span>(s)<br><span style="color:var(--kw)">LCASE</span>(s)<br><span style="color:var(--kw)">UCASE</span>(s)<br><span style="color:var(--kw)">SUBSTRING</span>(s,start,len)</div></div>
+<div class="ref-section"><h4>Other</h4><div class="ref-code"><span style="color:var(--kw)">ROUND</span>(x,places)<br><span style="color:var(--kw)">RANDOM</span>()  → 0..1</div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — operators',xp:15,
+     hint:'MOD returns the remainder; DIV returns the whole-number quotient with fractional part discarded.',
+     questions:[
+       {q:'What is the value of <code style="font-family:JetBrains Mono">MOD(17, 5)</code>?',
+        opts:['3','2','1','0'],correct:'B',
+        expl:'17 ÷ 5 = 3 remainder 2. MOD returns the remainder, which is 2.'},
+       {q:'What is the value of <code style="font-family:JetBrains Mono">DIV(17, 5)</code>?',
+        opts:['3','2','3.4','1'],correct:'A',
+        expl:'DIV discards the fractional part. 17 ÷ 5 = 3.4 → DIV returns 3.'},
+       {q:'What does <code style="font-family:JetBrains Mono">SUBSTRING("Cambridge", 1, 4)</code> return?',
+        opts:['"Camb"','"ambr"','"Cambridge"','"Cam"'],correct:'A',
+        expl:'SUBSTRING starts at position 1 (the first character) and takes 4 characters: C-a-m-b = "Camb".'},
+     ]},
+    {type:'fill',label:'Fill — function calls',xp:25,hint:'LCASE/UCASE return lower/upper case. LENGTH returns an integer. ROUND takes the value then number of decimal places.',render:'fill_m2'},
+    {type:'drag',label:'Drag — expressions',xp:25,hint:'Remember operator precedence: * and / before + and -. Use parentheses to be explicit.',render:'drag_m2'},
+    {type:'trace',label:'Trace — evaluate expressions',xp:25,hint:'Evaluate each expression step by step, left to right, respecting operator precedence.',render:'trace_m2'},
+  ]
+},
+
+// ── MOD 3 ──────────────────────────────
+{
+  id:'m3',num:3,icon:'🔀',
+  name:'Selection — IF & CASE',
+  desc:'Conditional logic, branching, decision structures',
+  color:'var(--purple)',
+  maxXp:120,
+  ref:`<h3>// selection reference</h3>
+<div class="ref-section"><h4>IF without ELSE</h4><div class="ref-code"><span style="color:var(--kw)">IF</span> &lt;cond&gt;<br>&nbsp;&nbsp;<span style="color:var(--kw)">THEN</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">ENDIF</span></div></div>
+<div class="ref-section"><h4>IF with ELSE</h4><div class="ref-code"><span style="color:var(--kw)">IF</span> &lt;cond&gt;<br>&nbsp;&nbsp;<span style="color:var(--kw)">THEN</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br>&nbsp;&nbsp;<span style="color:var(--kw)">ELSE</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">ENDIF</span></div></div>
+<div class="ref-section"><h4>CASE</h4><div class="ref-code"><span style="color:var(--kw)">CASE OF</span> &lt;id&gt;<br>&nbsp;&nbsp;v1 : &lt;stmt&gt;<br>&nbsp;&nbsp;v2 : &lt;stmt&gt;<br>&nbsp;&nbsp;<span style="color:var(--kw)">OTHERWISE</span> &lt;stmt&gt;<br><span style="color:var(--kw)">ENDCASE</span></div></div>
+<div class="ref-section"><h4>Operators</h4><div class="ref-code">= &lt; &lt;= &gt; &gt;= &lt;&gt;<br><span style="color:var(--kw)">AND  OR  NOT</span></div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — syntax & output',xp:15,
+     hint:'THEN and ELSE are on their own lines. ENDIF is one word. CASE stops at first matching case.',
+     questions:[
+       {q:'Which IF statement is written <strong>correctly</strong> in CIE pseudocode?',
+        opts:[
+          'IF Score > 50 THEN OUTPUT "Pass" ELSE OUTPUT "Fail" ENDIF',
+          'IF Score > 50\n  THEN\n    OUTPUT "Pass"\n  ELSE\n    OUTPUT "Fail"\nENDIF',
+          'IF Score > 50 THEN\n    OUTPUT "Pass"\nELSE\n    OUTPUT "Fail"\nEND IF',
+          'IF (Score > 50)\n  THEN OUTPUT "Pass"\nENDIF'
+        ],correct:'B',
+        expl:'THEN and ELSE must appear on their own lines, indented 2 spaces from IF. ENDIF is one word. Options A, C and D all break these rules.'},
+       {q:'Temperature ← 18. What does this nested IF output?<br><code style="font-family:JetBrains Mono;font-size:11px">IF Temp &lt; 15 THEN OUTPUT "Cold" ELSE IF Temp &lt; 25 THEN OUTPUT "Mild" ELSE OUTPUT "Hot" ENDIF ENDIF</code>',
+        opts:['Cold','Mild','Hot','Error'],correct:'B',
+        expl:'18 is not < 15, so we enter ELSE. 18 IS < 25, so we enter the inner THEN and output "Mild".'},
+       {q:'Grade ← \'B\'. What does this CASE statement output?<br><code style="font-family:JetBrains Mono;font-size:11px">CASE OF Grade | \'A\':OUTPUT "Excellent" | \'B\':OUTPUT "Good" | OTHERWISE OUTPUT "Other" ENDCASE</code>',
+        opts:['Excellent then Good','Good then Other','Good only','Other'],correct:'C',
+        expl:'CASE tests cases in sequence and stops at the first match. Grade is "B" so "Good" is output and no other cases are tested.'},
+     ]},
+    {type:'fill',label:'Fill — IF & CASE',xp:20,hint:'IF needs THEN, ELSE (optional), ENDIF. CASE needs CASE OF, colon after each value, OTHERWISE for catch-all, ENDCASE.',render:'fill_m3'},
+    {type:'drag',label:'Drag — nested IF',xp:25,hint:'The outer IF/THEN/ELSE/ENDIF wraps the inner one. Each IF needs exactly one matching ENDIF.',render:'drag_m3'},
+    {type:'flow',label:'Flowchart — label it',xp:25,hint:'The diamond holds the condition. TRUE branch → what happens when condition is true. FALSE branch → what happens when false.',render:'flow_m3'},
+    {type:'trace',label:'Trace — grade program',xp:35,hint:'Trace each condition in order. Outer IF first. Only enter inner IF if outer is FALSE.',render:'trace_m3'},
+  ]
+},
+
+// ── MOD 4 ──────────────────────────────
+{
+  id:'m4',num:4,icon:'🔁',
+  name:'Simple Loops',
+  desc:'FOR, WHILE, REPEAT UNTIL with inputs and counters',
+  color:'var(--amber)',
+  maxXp:120,
+  ref:`<h3>// loops reference</h3>
+<div class="ref-section"><h4>FOR loop</h4><div class="ref-code"><span style="color:var(--kw)">FOR</span> i ← 1 <span style="color:var(--kw)">TO</span> n<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">NEXT</span> i</div></div>
+<div class="ref-section"><h4>FOR with STEP</h4><div class="ref-code"><span style="color:var(--kw)">FOR</span> i ← 1 <span style="color:var(--kw)">TO</span> n <span style="color:var(--kw)">STEP</span> 2<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">NEXT</span> i</div></div>
+<div class="ref-section"><h4>WHILE loop</h4><div class="ref-code"><span style="color:var(--kw)">WHILE</span> &lt;cond&gt; <span style="color:var(--kw)">DO</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">ENDWHILE</span></div></div>
+<div class="ref-section"><h4>REPEAT loop</h4><div class="ref-code"><span style="color:var(--kw)">REPEAT</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">UNTIL</span> &lt;cond&gt;</div></div>
+<div class="ref-section"><h4>Key differences</h4><div class="ref-code" style="color:var(--text2);font-size:10px">FOR: known count<br>WHILE: 0 or more times<br>REPEAT: 1 or more times</div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — loop choice',xp:15,
+     hint:'REPEAT always runs at least once. WHILE may run zero times. FOR is for a known number of iterations.',
+     questions:[
+       {q:'A program asks the user to keep entering numbers <strong>until they enter 0</strong>. Which loop type is most appropriate?',
+        opts:['FOR','WHILE','REPEAT UNTIL','None'],correct:'C',
+        expl:'REPEAT UNTIL always executes at least once — perfect for "ask then check". Since we need to get input before we can check it, REPEAT is the right choice.'},
+       {q:'A program prints numbers <strong>1 to 10</strong>. The loop counter is known in advance. Which loop?',
+        opts:['FOR','WHILE','REPEAT UNTIL','Either A or B'],correct:'A',
+        expl:'FOR loops are ideal when the number of iterations is known in advance. FOR i ← 1 TO 10 is the cleanest solution.'},
+       {q:'What is the output of this loop when <code style="font-family:JetBrains Mono">N ← 3</code>?<br><code style="font-family:JetBrains Mono;font-size:11px">FOR i ← 1 TO N: OUTPUT i * 2: NEXT i</code>',
+        opts:['1 2 3','2 4 6','0 2 4','3 6 9'],correct:'B',
+        expl:'i takes values 1, 2, 3. i*2 gives 2, 4, 6.'},
+     ]},
+    {type:'fill',label:'Fill — loop syntax',xp:20,hint:'FOR needs TO and NEXT. WHILE needs DO and ENDWHILE. REPEAT needs UNTIL. The condition for REPEAT goes at the end.',render:'fill_m4'},
+    {type:'drag',label:'Drag — REPEAT UNTIL',xp:25,hint:'REPEAT comes first, then the body statements, then UNTIL with the condition last.',render:'drag_m4'},
+    {type:'flow',label:'Flowchart — WHILE loop',xp:25,hint:'A WHILE loop has the decision diamond at the top. The loop body feeds back up to the diamond. When condition is FALSE, exit.',render:'flow_m4'},
+    {type:'trace',label:'Trace — FOR counter',xp:35,hint:'Track the loop variable and any accumulator. The loop runs from the start value TO the end value inclusive.',render:'trace_m4'},
+  ]
+},
+
+// ── MOD 5 ──────────────────────────────
+{
+  id:'m5',num:5,icon:'📋',
+  name:'Loops with 1D Arrays',
+  desc:'Declare, access, and traverse single-dimension arrays',
+  color:'var(--coral)',
+  maxXp:100,
+  ref:`<h3>// 1D arrays reference</h3>
+<div class="ref-section"><h4>Declare</h4><div class="ref-code"><span style="color:var(--kw)">DECLARE</span> Arr : <span style="color:var(--kw)">ARRAY</span>[1:n] <span style="color:var(--kw)">OF</span> &lt;type&gt;</div></div>
+<div class="ref-section"><h4>Access element</h4><div class="ref-code">Arr[i] ← value<br>OUTPUT Arr[i]</div></div>
+<div class="ref-section"><h4>Traverse with FOR</h4><div class="ref-code"><span style="color:var(--kw)">FOR</span> i ← 1 <span style="color:var(--kw)">TO</span> n<br>&nbsp;&nbsp;&nbsp;&nbsp;Arr[i] ← ...<br><span style="color:var(--kw)">NEXT</span> i</div></div>
+<div class="ref-section"><h4>Notes</h4><div class="ref-code" style="color:var(--text2);font-size:10px">Lower bound usually 1<br>Upper bound = size<br>All elements same type<br>Fixed length</div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — array basics',xp:15,
+     hint:'DECLARE uses ARRAY[lower:upper] OF type. The index in square brackets accesses one element.',
+     questions:[
+       {q:'Which correctly declares an array of 20 integers called Scores?',
+        opts:[
+          'DECLARE Scores : INTEGER[20]',
+          'DECLARE Scores : ARRAY[1:20] OF INTEGER',
+          'DECLARE Scores[1:20] : INTEGER',
+          'ARRAY Scores[20] : INTEGER'
+        ],correct:'B',
+        expl:'CIE syntax is: DECLARE identifier : ARRAY[lower:upper] OF datatype. The bounds go inside square brackets before OF.'},
+       {q:'An array Marks is declared ARRAY[1:5] OF INTEGER. How do you store 99 in the third element?',
+        opts:['Marks(3) ← 99','Marks[3] ← 99','Marks.3 ← 99','Marks[2] ← 99'],correct:'B',
+        expl:'Square brackets are used for array access in CIE pseudocode. The first element is index 1, so the third element is Marks[3].'},
+       {q:'What does this loop do?<br><code style="font-family:JetBrains Mono;font-size:11px">FOR i ← 1 TO 5: Total ← Total + Scores[i]: NEXT i</code>',
+        opts:['Prints all elements','Counts non-zero elements','Adds all elements to Total','Sorts the array'],correct:'C',
+        expl:'Each iteration adds Scores[i] to Total — this is the standard pattern for summing array elements.'},
+     ]},
+    {type:'fill',label:'Fill — array declaration & loop',xp:25,hint:'DECLARE uses ARRAY[1:n] OF type. Access uses identifier[index].',render:'fill_m5'},
+    {type:'drag',label:'Drag — sum array elements',xp:25,hint:'Initialise Total to 0 before the loop. Inside the loop, add the array element to Total.',render:'drag_m5'},
+    {type:'trace',label:'Trace — array traversal',xp:35,hint:'Track both the index variable and any running accumulator. The array elements are given — read them at each index.',render:'trace_m5'},
+  ]
+},
+
+// ── MOD 6 ──────────────────────────────
+{
+  id:'m6',num:6,icon:'🗂️',
+  name:'Multiple & 2D Arrays',
+  desc:'Parallel arrays, nested FOR loops, 2D grid access',
+  color:'var(--pink)',
+  maxXp:110,
+  ref:`<h3>// 2D arrays reference</h3>
+<div class="ref-section"><h4>Declare 2D</h4><div class="ref-code"><span style="color:var(--kw)">DECLARE</span> Grid : <span style="color:var(--kw)">ARRAY</span>[1:r,1:c] <span style="color:var(--kw)">OF</span> &lt;type&gt;</div></div>
+<div class="ref-section"><h4>Access element</h4><div class="ref-code">Grid[row, col] ← value</div></div>
+<div class="ref-section"><h4>Nested FOR</h4><div class="ref-code"><span style="color:var(--kw)">FOR</span> Row ← 1 <span style="color:var(--kw)">TO</span> MaxRow<br>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--kw)">FOR</span> Col ← 1 <span style="color:var(--kw)">TO</span> MaxCol<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Grid[Row,Col] ← ...<br>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--kw)">NEXT</span> Col<br><span style="color:var(--kw)">NEXT</span> Row</div></div>
+<div class="ref-section"><h4>Parallel arrays</h4><div class="ref-code" style="color:var(--text2);font-size:10px">Names[i] and Scores[i] share<br>the same index i to link<br>related data together.</div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — 2D arrays',xp:15,
+     hint:'2D arrays use two indices [row,col]. NEXT must match its FOR — the inner NEXT comes before the outer NEXT.',
+     questions:[
+       {q:'Which correctly declares a 3×3 grid of CHAR?',
+        opts:[
+          'DECLARE Grid : ARRAY[3,3] OF CHAR',
+          'DECLARE Grid : ARRAY[1:3][1:3] OF CHAR',
+          'DECLARE Grid : ARRAY[1:3, 1:3] OF CHAR',
+          'DECLARE Grid(3,3) : CHAR'
+        ],correct:'C',
+        expl:'2D arrays in CIE pseudocode use ARRAY[lower1:upper1, lower2:upper2] OF type — both dimension ranges in one square bracket, separated by a comma.'},
+       {q:'In a nested FOR loop over rows and columns, which NEXT comes first?',
+        opts:['NEXT Row','NEXT Col','Either order is fine','NEXT Col AND NEXT Row together'],correct:'B',
+        expl:'The inner loop (Col) must be closed before the outer loop (Row). NEXT Col appears inside the outer loop body, before NEXT Row.'},
+       {q:'Names and Scores are parallel arrays of size 5. To print the name and score for student 3, you write:',
+        opts:[
+          'OUTPUT Names[3], Scores[3]',
+          'OUTPUT Names(3), Scores(3)',
+          'OUTPUT Names[3] AND Scores[3]',
+          'OUTPUT Names, Scores, 3'
+        ],correct:'A',
+        expl:'Parallel arrays use the same index. Square brackets for access. OUTPUT with multiple values separated by commas.'},
+     ]},
+    {type:'fill',label:'Fill — 2D array & nested FOR',xp:25,hint:'The 2D declaration has two index ranges separated by a comma. The inner NEXT must come before the outer NEXT.',render:'fill_m6'},
+    {type:'drag',label:'Drag — nested FOR loop',xp:30,hint:'Outer loop is rows, inner loop is columns. Close the inner loop (NEXT Col) before the outer (NEXT Row).',render:'drag_m6'},
+    {type:'trace',label:'Trace — 2D traversal',xp:40,hint:'For each Row value, the inner loop runs through all Col values before Row increments.',render:'trace_m6'},
+  ]
+},
+
+// ── MOD 7 ──────────────────────────────
+{
+  id:'m7',num:7,icon:'⚙️',
+  name:'Procedures & Functions',
+  desc:'Define, call, parameters, return values',
+  color:'var(--orange)',
+  maxXp:130,
+  ref:`<h3>// procedures & functions</h3>
+<div class="ref-section"><h4>Procedure (no params)</h4><div class="ref-code"><span style="color:var(--kw)">PROCEDURE</span> Name<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">ENDPROCEDURE</span></div></div>
+<div class="ref-section"><h4>Procedure (with params)</h4><div class="ref-code"><span style="color:var(--kw)">PROCEDURE</span> Name(p:<span style="color:var(--kw)">TYPE</span>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br><span style="color:var(--kw)">ENDPROCEDURE</span></div></div>
+<div class="ref-section"><h4>Call procedure</h4><div class="ref-code"><span style="color:var(--kw)">CALL</span> Name<br><span style="color:var(--kw)">CALL</span> Name(value)</div></div>
+<div class="ref-section"><h4>Function</h4><div class="ref-code"><span style="color:var(--kw)">FUNCTION</span> Name(p:<span style="color:var(--kw)">TYPE</span>) <span style="color:var(--kw)">RETURNS TYPE</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;statements&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--kw)">RETURN</span> value<br><span style="color:var(--kw)">ENDFUNCTION</span></div></div>
+<div class="ref-section"><h4>Key rules</h4><div class="ref-code" style="color:var(--text2);font-size:10px">• CALL only for procedures<br>• Functions called in expressions<br>• RETURN specifies the value<br>• Functions must declare RETURNS type</div></div>`,
+  exercises:[
+    {type:'mcq',label:'MCQ — procedures vs functions',xp:15,
+     hint:'Procedures use CALL. Functions return a value and are used inside expressions — never with CALL.',
+     questions:[
+       {q:'Which statement correctly <strong>calls</strong> a procedure called PrintLine?',
+        opts:['PrintLine()','CALL PrintLine','FUNCTION PrintLine','RETURN PrintLine'],correct:'B',
+        expl:'Procedures are called with the CALL keyword. Functions are NOT called with CALL — they appear inside expressions instead.'},
+       {q:'A function Double takes an INTEGER and returns an INTEGER. How do you store the result of calling it with 5?',
+        opts:['CALL Double(5)','Result ← CALL Double(5)','Result ← Double(5)','FUNCTION Double(5) RETURNS Result'],correct:'C',
+        expl:'Functions return values and are used directly in expressions. No CALL keyword. Result ← Double(5) stores the returned value.'},
+       {q:'Which function definition is <strong>correct</strong> CIE syntax?',
+        opts:[
+          'FUNCTION Square(N) RETURNS INTEGER\n  RETURN N*N\nENDFUNCTION',
+          'FUNCTION Square(N:INTEGER) RETURNS INTEGER\n  RETURN N*N\nENDFUNCTION',
+          'PROCEDURE Square(N:INTEGER) RETURNS INTEGER\n  RETURN N*N\nENDPROCEDURE',
+          'FUNCTION Square(N:INTEGER)\n  RETURN N*N\nENDFUNCTION'
+        ],correct:'B',
+        expl:'Function parameters must have their data type declared. RETURNS INTEGER specifies the return type. ENDFUNCTION closes the definition.'},
+     ]},
+    {type:'fill',label:'Fill — define & call',xp:25,hint:'PROCEDURE definition ends with ENDPROCEDURE. FUNCTION needs RETURNS type before the body. CALL is only for procedures.',render:'fill_m7'},
+    {type:'drag',label:'Drag — complete program',xp:30,hint:'Define procedures/functions first, then call them. RETURN is the last statement inside a function.',render:'drag_m7'},
+    {type:'fill',label:'Fill — function with arrays',xp:30,hint:'Functions can take array elements as parameters. The return type must match what RETURN produces.',render:'fill_m7b'},
+    {type:'trace',label:'Trace — procedure calls',xp:30,hint:'When a procedure is called, trace INTO it. Follow each statement. When ENDPROCEDURE is reached, return to the call site.',render:'trace_m7'},
+  ]
+},
+
+];
+
+// ══════════════════════════════════════
+// HOME SCREEN
+// ══════════════════════════════════════
+function buildHome(){
+  const grid=$id('home-grid');
+  grid.innerHTML='';
+  MODULES.forEach((m,i)=>{
+    const locked=i>0&&!G.modDone['m'+(i)];
+    const done=G.modDone[m.id];
+    const stars=getStars(m);
+    const div=document.createElement('div');
+    div.className='mod-card mod-'+(i+1)+(locked?' locked':'')+(done?' completed':'');
+    div.innerHTML=`
+      <div class="mod-num">Module ${m.num} / 7</div>
+      <div class="mod-icon">${m.icon}</div>
+      <div class="mod-name">${m.name}</div>
+      <div class="mod-desc">${m.desc}</div>
+      <div class="mod-status">
+        <span class="mod-xp">${G.modXp[m.id]||0} / ${m.maxXp} XP</span>
+        <div>
+          ${locked?'<span class="mod-lock">🔒</span>':
+            done?`<div class="mod-stars">${[1,2,3].map(s=>`<svg class="mod-star${stars>=s?' lit':''}" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('')}</div>`:
+            '<span class="mod-check" style="color:var(--text3);font-size:13px">→ Start</span>'}
+        </div>
+      </div>`;
+    if(!locked) div.onclick=()=>openModule(m);
+    grid.appendChild(div);
+  });
+}
+function getStars(m){
+  const xp=G.modXp[m.id]||0;
+  const pct=xp/m.maxXp;
+  if(pct>=0.85)return 3;
+  if(pct>=0.6)return 2;
+  if(pct>0)return 1;
+  return 0;
+}
+function goHome(){
+  $id('home').classList.add('active');
+  $id('module-screen').classList.remove('active');
+  G.currentMod=null;
+  buildHome();
+}
+
+// ══════════════════════════════════════
+// OPEN MODULE
+// ══════════════════════════════════════
+function openModule(m){
+  G.currentMod=m;
+  G.currentEx=0;
+  G.exState={};
+  G.xp=G.modXp[m.id]||0;
+  G.maxXp=m.maxXp;
+  if(!G.exDone[m.id]) G.exDone[m.id]=new Set();
+
+  $id('home').classList.remove('active');
+  $id('module-screen').classList.add('active');
+
+  // banner
+  $id('mod-tag-el').style.cssText=`background:rgba(0,0,0,0.3);border-color:${m.color};color:${m.color}`;
+  $id('mod-tag-el').textContent='Module '+m.num+' / 7';
+  $id('mod-title-el').textContent=m.name;
+  $id('mod-sub-el').textContent=m.desc;
+
+  // xp
+  $id('xp-fill').style.width=(G.xp/G.maxXp*100)+'%';
+  $id('xp-txt').textContent=G.xp+'/'+G.maxXp;
+
+  // ref
+  $id('ref-aside').innerHTML=m.ref;
+  if(G.refOpen){$id('ref-aside').classList.remove('closed');}
+
+  buildTabs();
+  renderEx(0);
+}
+
+function buildTabs(){
+  const m=G.currentMod;
+  const tabs=$id('ex-tabs');
+  tabs.innerHTML='';
+  m.exercises.forEach((ex,i)=>{
+    const done=G.exDone[m.id]&&G.exDone[m.id].has(i);
+    const locked=i>0&&!(G.exDone[m.id]&&G.exDone[m.id].has(i-1));
+    const active=i===G.currentEx;
+    const div=document.createElement('div');
+    div.className='ex-tab'+(active?' active':'')+(done?' done':'')+(locked?' locked':'');
+    div.textContent=ex.label;
+    div.onclick=()=>{if(!locked)renderEx(i);};
+    div.id='tab-'+i;
+    tabs.appendChild(div);
+  });
+}
+
+function renderEx(idx){
+  G.currentEx=idx;
+  buildTabs();
+  const m=G.currentMod;
+  const ex=m.exercises[idx];
+  const content=$id('mod-content');
+
+  // completion screen
+  $id('mod-content').style.display='block';
+
+  if(ex.type==='mcq') content.innerHTML=buildMCQ(ex,idx);
+  else if(ex.type==='fill') content.innerHTML=buildFill(ex,idx);
+  else if(ex.type==='drag') content.innerHTML=buildDrag(ex,idx);
+  else if(ex.type==='flow') content.innerHTML=buildFlow(ex,idx);
+  else if(ex.type==='trace') content.innerHTML=buildTrace(ex,idx);
+
+  // re-attach drag listeners
+  if(ex.type==='drag') initDragListeners(idx);
+  window.scrollTo(0,0);
+}
+
+function markExDone(idx){
+  const m=G.currentMod;
+  G.exDone[m.id].add(idx);
+  G.modXp[m.id]=G.xp;
+  // unlock next tab
+  const nextTab=$id('tab-'+(idx+1));
+  if(nextTab) nextTab.classList.remove('locked');
+  buildTabs();
+  // check if all done
+  if(idx===m.exercises.length-1){
+    G.modDone[m.id]=true;
+    showCompletion();
+    return;
+  }
+}
+function nextEx(){
+  const idx=G.currentEx;
+  markExDone(idx);
+  if(G.currentMod&&idx<G.currentMod.exercises.length-1) renderEx(idx+1);
+}
+
+function showCompletion(){
+  const m=G.currentMod;
+  const xp=G.modXp[m.id]||G.xp;
+  const stars=getStars(m);
+  $id('mod-content').innerHTML=`
+  <div class="comp on">
+    <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--accent2);margin-bottom:6px">MODULE ${m.num} COMPLETE</div>
+    <div class="comp-xp">${xp}</div>
+    <div class="comp-lbl">XP earned this session</div>
+    <div class="comp-stars">
+      ${[1,2,3].map(s=>`<svg class="comp-star${stars>=s?' lit':''}" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`).join('')}
+    </div>
+    <p class="comp-msg">${stars===3?'Flawless! You\'ve mastered '+m.name+'. The next module is unlocked.':stars===2?'Great work on '+m.name+'! You can retry exercises to improve your score.':'Good effort on '+m.name+'. Review the reference panel and try again for more stars.'}</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-s" onclick="goHome()">← All Modules</button>
+      ${m.num<7?`<button class="btn btn-p" onclick="openModule(MODULES[${m.num}])">Module ${m.num+1} →</button>`:'<button class="btn btn-p" onclick="goHome()">🏆 All done!</button>'}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// MCQ BUILDER
+// ══════════════════════════════════════
+function buildMCQ(ex,idx){
+  let html=`<div class="ex-section active" id="ex-sec-${idx}">`;
+  ex.questions.forEach((q,qi)=>{
+    html+=`<div class="card">
+    <div class="card-head"><span class="badge badge-mcq">● MCQ ${qi+1}/${ex.questions.length}</span><span class="pts">+${Math.round(ex.xp/ex.questions.length)} XP</span></div>
+    <div class="card-body">
+      <p class="q">${q.q}</p>
+      <div class="opts" id="mcq-${idx}-${qi}">`;
+    ['A','B','C','D'].forEach((k,oi)=>{
+      if(!q.opts[oi]) return;
+      html+=`<div class="opt" onclick="selOpt(this,'mcq-${idx}-${qi}','${k}',${idx},${qi})" data-val="${k}">
+        <span class="opt-k">${k}</span><span>${q.opts[oi].replace(/\n/g,'<br>')}</span>
+      </div>`;
+    });
+    html+=`</div>
+      <div class="fb" id="fb-mcq-${idx}-${qi}"></div>
+      <div class="btn-row"><button class="btn btn-p" id="btn-mcq-${idx}-${qi}" onclick="checkOpt(${idx},${qi})" disabled>Check</button></div>
+    </div></div>`;
+  });
+  html+=`<div class="btn-row" id="mcq-next-${idx}" style="display:none">
+    <button class="btn btn-p" onclick="nextEx()">Next exercise →</button>
+  </div></div>`;
+  return html;
+}
+
+const mcqSel={};
+function selOpt(el,grp,val,exIdx,qi){
+  const key=grp;
+  if(mcqSel[key+'_done']) return;
+  document.querySelectorAll('#'+grp+' .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  mcqSel[key]=val;
+  $id('btn-mcq-'+exIdx+'-'+qi).disabled=false;
+}
+function checkOpt(exIdx,qi){
+  const m=G.currentMod;
+  const ex=m.exercises[exIdx];
+  const q=ex.questions[qi];
+  const grp='mcq-'+exIdx+'-'+qi;
+  if(mcqSel[grp+'_done']) return;
+  mcqSel[grp+'_done']=true;
+  const sel=mcqSel[grp];
+  $id('btn-mcq-'+exIdx+'-'+qi).disabled=true;
+  document.querySelectorAll('#'+grp+' .opt').forEach(o=>{
+    if(o.dataset.val===q.correct) o.classList.add('ok');
+    else if(o.dataset.val===sel&&sel!==q.correct) o.classList.add('bad');
+    o.style.cursor='default';
+  });
+  const correct=sel===q.correct;
+  const fbEl=$id('fb-mcq-'+exIdx+'-'+qi);
+  fbEl.className='fb on '+(correct?'ok':'bad');
+  fbEl.innerHTML=correct?`<strong>Correct!</strong> <span class="ex">${q.expl}</span>`:`<strong>Not quite.</strong> <span class="ex">The answer is ${q.correct}. ${q.expl}</span>`;
+  if(correct) addXP(Math.round(ex.xp/ex.questions.length));
+
+  // check if all done
+  const allDone=ex.questions.every((_,i)=>mcqSel['mcq-'+exIdx+'-'+i+'_done']);
+  if(allDone) $id('mcq-next-'+exIdx).style.display='flex';
+}
+
+// ══════════════════════════════════════
+// FILL BUILDERS
+// ══════════════════════════════════════
+function buildFill(ex,idx){
+  const renders={
+    fill_m1:`
+      <p class="q">Complete these variable and constant declarations.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">DECLARE</span>&nbsp;<input class="blank" id="fb1" placeholder="???" style="width:120px" data-ans="PlayerName" autocomplete="off" spellcheck="false">&nbsp;:&nbsp;<span class="kw">STRING</span></div>
+        <div class="fill-row"><span class="kw">DECLARE</span>&nbsp;<span class="vv">Score</span>&nbsp;:&nbsp;<input class="blank" id="fb2" placeholder="????" style="width:90px" data-ans="INTEGER" autocomplete="off" spellcheck="false"></div>
+        <div class="fill-row"><span class="kw">DECLARE</span>&nbsp;<span class="vv">IsWinner</span>&nbsp;:&nbsp;<input class="blank" id="fb3" placeholder="???????" style="width:110px" data-ans="BOOLEAN" autocomplete="off" spellcheck="false"></div>
+        <div class="fill-row"><input class="blank" id="fb4" placeholder="????????" style="width:110px" data-ans="CONSTANT">&nbsp;<span class="vv">MaxScore</span>&nbsp;←&nbsp;<span class="sv">100</span></div>
+      </div>`,
+    fill_m2:`
+      <p class="q">Complete these function calls. Pay attention to the argument types.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="vv">L</span>&nbsp;←&nbsp;<input class="blank" id="fb1" placeholder="??????" style="width:90px" data-ans="LENGTH">&nbsp;(<span class="sv">"Hello World"</span>)&nbsp;&nbsp;<span class="cv">// should give 11</span></div>
+        <div class="fill-row"><span class="vv">Low</span>&nbsp;←&nbsp;<span class="kw">LCASE</span>(<input class="blank" id="fb2" placeholder="???" style="width:80px" data-ans='"Hi"' autocomplete="off" spellcheck="false">)&nbsp;&nbsp;<span class="cv">// returns "hi"</span></div>
+        <div class="fill-row"><span class="vv">Sub</span>&nbsp;←&nbsp;<span class="kw">SUBSTRING</span>(<span class="sv">"Cambridge"</span>,&nbsp;<input class="blank" id="fb3" placeholder="?" style="width:30px" data-ans="5" autocomplete="off" spellcheck="false">,&nbsp;<span class="sv">3</span>)&nbsp;&nbsp;<span class="cv">// returns "rid"</span></div>
+        <div class="fill-row"><span class="vv">R</span>&nbsp;←&nbsp;<span class="kw">ROUND</span>(<span class="sv">3.7865</span>,&nbsp;<input class="blank" id="fb4" placeholder="?" style="width:30px" data-ans="2" autocomplete="off" spellcheck="false">)&nbsp;&nbsp;<span class="cv">// returns 3.79</span></div>
+      </div>`,
+    fill_m3:`
+      <p class="q">Complete the IF statement. A student passes if Score &gt;= 50, fails otherwise.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">IF</span>&nbsp;<span class="vv">Score</span>&nbsp;<input class="blank" id="fb1" placeholder="??" style="width:36px" data-ans=">=" autocomplete="off" spellcheck="false">&nbsp;<span class="sv">50</span></div>
+        <div class="fill-row">&nbsp;&nbsp;<input class="blank" id="fb2" placeholder="????" style="width:60px" data-ans="THEN" autocomplete="off" spellcheck="false"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Pass"</span></div>
+        <div class="fill-row">&nbsp;&nbsp;<input class="blank" id="fb3" placeholder="????" style="width:60px" data-ans="ELSE" autocomplete="off" spellcheck="false"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Fail"</span></div>
+        <div class="fill-row"><input class="blank" id="fb4" placeholder="?????" style="width:70px" data-ans="ENDIF" autocomplete="off" spellcheck="false"></div>
+      </div>
+      <p class="q" style="margin-top:14px">Now complete the CASE statement for a traffic light.</p>
+      <div class="fill-block">
+        <div class="fill-row"><input class="blank" id="fb5" placeholder="????" style="width:60px" data-ans="CASE">&nbsp;<span class="kw">OF</span>&nbsp;<span class="vv">Light</span></div>
+        <div class="fill-row">&nbsp;&nbsp;<span class="sv">"Red"</span>&nbsp;<input class="blank" id="fb6" placeholder="?" style="width:22px" data-ans=":">&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Stop"</span></div>
+        <div class="fill-row">&nbsp;&nbsp;<span class="sv">"Green"</span>&nbsp;:&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Go"</span></div>
+        <div class="fill-row">&nbsp;&nbsp;<input class="blank" id="fb7" placeholder="?????????" style="width:120px" data-ans="OTHERWISE">&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Wait"</span></div>
+        <div class="fill-row"><input class="blank" id="fb8" placeholder="???????" style="width:90px" data-ans="ENDCASE"></div>
+      </div>`,
+    fill_m4:`
+      <p class="q">Complete the loop structures.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="cv">// Count from 1 to 10 and output each number</span></div>
+        <div class="fill-row"><span class="kw">FOR</span>&nbsp;<span class="vv">Count</span>&nbsp;←&nbsp;<span class="sv">1</span>&nbsp;<input class="blank" id="fb1" placeholder="??" style="width:36px" data-ans="TO">&nbsp;<span class="sv">10</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="vv">Count</span></div>
+        <div class="fill-row"><input class="blank" id="fb2" placeholder="????" style="width:55px" data-ans="NEXT">&nbsp;<span class="vv">Count</span></div>
+      </div>
+      <div class="fill-block">
+        <div class="fill-row"><span class="cv">// Keep asking for input while not 0</span></div>
+        <div class="fill-row"><span class="kw">WHILE</span>&nbsp;<span class="vv">Num</span>&nbsp;&lt;&gt;&nbsp;<span class="sv">0</span>&nbsp;<input class="blank" id="fb3" placeholder="??" style="width:36px" data-ans="DO"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">INPUT</span>&nbsp;<span class="vv">Num</span></div>
+        <div class="fill-row"><input class="blank" id="fb4" placeholder="????????" style="width:110px" data-ans="ENDWHILE"></div>
+      </div>
+      <div class="fill-block">
+        <div class="fill-row"><span class="cv">// Ask for password until correct</span></div>
+        <div class="fill-row"><input class="blank" id="fb5" placeholder="??????" style="width:80px" data-ans="REPEAT"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">INPUT</span>&nbsp;<span class="vv">Password</span></div>
+        <div class="fill-row"><input class="blank" id="fb6" placeholder="?????" style="width:70px" data-ans="UNTIL">&nbsp;<span class="vv">Password</span>&nbsp;=&nbsp;<span class="sv">"secret"</span></div>
+      </div>`,
+    fill_m5:`
+      <p class="q">Complete the 1D array declaration and loop.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">DECLARE</span>&nbsp;<span class="vv">Marks</span>&nbsp;:&nbsp;<input class="blank" id="fb1" placeholder="?????" style="width:65px" data-ans="ARRAY">&nbsp;[<input class="blank" id="fb2" placeholder="?" style="width:22px" data-ans="1">:<span class="sv">10</span>]&nbsp;<span class="kw">OF</span>&nbsp;<span class="kw">INTEGER</span></div>
+        <div class="fill-row"><span class="vv">Total</span>&nbsp;←&nbsp;<span class="sv">0</span></div>
+        <div class="fill-row"><span class="kw">FOR</span>&nbsp;<span class="vv">i</span>&nbsp;←&nbsp;<span class="sv">1</span>&nbsp;<span class="kw">TO</span>&nbsp;<input class="blank" id="fb3" placeholder="??" style="width:36px" data-ans="10"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Total</span>&nbsp;←&nbsp;<span class="vv">Total</span>&nbsp;+&nbsp;<span class="vv">Marks</span>[<input class="blank" id="fb4" placeholder="?" style="width:22px" data-ans="i">]</div>
+        <div class="fill-row"><span class="kw">NEXT</span>&nbsp;<span class="vv">i</span></div>
+        <div class="fill-row"><span class="kw">OUTPUT</span>&nbsp;<input class="blank" id="fb5" placeholder="?????" style="width:65px" data-ans="Total"></div>
+      </div>`,
+    fill_m6:`
+      <p class="q">Complete the 2D array declaration and nested FOR loop.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">DECLARE</span>&nbsp;<span class="vv">Grid</span>&nbsp;:&nbsp;<span class="kw">ARRAY</span>[<span class="sv">1</span>:<span class="sv">3</span>,&nbsp;<input class="blank" id="fb1" placeholder="?" style="width:22px" data-ans="1">:<input class="blank" id="fb2" placeholder="?" style="width:22px" data-ans="4">]&nbsp;<span class="kw">OF</span>&nbsp;<span class="kw">INTEGER</span>&nbsp;&nbsp;<span class="cv">// 3 rows, 4 cols</span></div>
+        <div class="fill-row"><span class="kw">FOR</span>&nbsp;<span class="vv">Row</span>&nbsp;←&nbsp;<span class="sv">1</span>&nbsp;<span class="kw">TO</span>&nbsp;<span class="sv">3</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">FOR</span>&nbsp;<span class="vv">Col</span>&nbsp;←&nbsp;<span class="sv">1</span>&nbsp;<span class="kw">TO</span>&nbsp;<span class="sv">4</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Grid</span>[<input class="blank" id="fb3" placeholder="???" style="width:45px" data-ans="Row">,&nbsp;<input class="blank" id="fb4" placeholder="???" style="width:45px" data-ans="Col">]&nbsp;←&nbsp;<span class="sv">0</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">NEXT</span>&nbsp;<input class="blank" id="fb5" placeholder="???" style="width:45px" data-ans="Col"></div>
+        <div class="fill-row"><span class="kw">NEXT</span>&nbsp;<input class="blank" id="fb6" placeholder="???" style="width:45px" data-ans="Row"></div>
+      </div>`,
+    fill_m7:`
+      <p class="q">Complete the procedure and function definitions.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">PROCEDURE</span>&nbsp;<span class="vv">Greet</span>(<span class="vv">Name</span>&nbsp;:&nbsp;<span class="kw">STRING</span>)</div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">OUTPUT</span>&nbsp;<span class="sv">"Hello, "</span>,&nbsp;<span class="vv">Name</span></div>
+        <div class="fill-row"><input class="blank" id="fb1" placeholder="????????????" style="width:150px" data-ans="ENDPROCEDURE"></div>
+        <div class="fill-row">&nbsp;</div>
+        <div class="fill-row"><span class="kw">FUNCTION</span>&nbsp;<span class="vv">Square</span>(<span class="vv">N</span>&nbsp;:&nbsp;<span class="kw">INTEGER</span>)&nbsp;<input class="blank" id="fb2" placeholder="???????" style="width:90px" data-ans="RETURNS">&nbsp;<span class="kw">INTEGER</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<input class="blank" id="fb3" placeholder="??????" style="width:80px" data-ans="RETURN">&nbsp;<span class="vv">N</span>&nbsp;*&nbsp;<span class="vv">N</span></div>
+        <div class="fill-row"><span class="kw">ENDFUNCTION</span></div>
+        <div class="fill-row">&nbsp;</div>
+        <div class="fill-row"><span class="cv">// Call the procedure</span></div>
+        <div class="fill-row"><input class="blank" id="fb4" placeholder="????" style="width:55px" data-ans="CALL">&nbsp;<span class="vv">Greet</span>(<span class="sv">"Ali"</span>)</div>
+        <div class="fill-row"><span class="cv">// Use the function</span></div>
+        <div class="fill-row"><span class="vv">Result</span>&nbsp;←&nbsp;<span class="vv">Square</span>(<span class="sv">7</span>)&nbsp;&nbsp;<span class="cv">// stores 49</span></div>
+      </div>`,
+    fill_m7b:`
+      <p class="q">Complete the function that finds the maximum value in an array.</p>
+      <div class="fill-block">
+        <div class="fill-row"><span class="kw">FUNCTION</span>&nbsp;<span class="vv">FindMax</span>(<span class="vv">Arr</span>&nbsp;:&nbsp;<span class="kw">ARRAY</span>[<span class="sv">1</span>:<span class="sv">5</span>]&nbsp;<span class="kw">OF</span>&nbsp;<span class="kw">INTEGER</span>)&nbsp;<span class="kw">RETURNS</span>&nbsp;<span class="kw">INTEGER</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">DECLARE</span>&nbsp;<span class="vv">Max</span>&nbsp;:&nbsp;<span class="kw">INTEGER</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Max</span>&nbsp;←&nbsp;<input class="blank" id="fb1" placeholder="????" style="width:70px" data-ans="Arr[1]">&nbsp;&nbsp;<span class="cv">// start with first element</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">FOR</span>&nbsp;<span class="vv">i</span>&nbsp;←&nbsp;<span class="sv">2</span>&nbsp;<span class="kw">TO</span>&nbsp;<span class="sv">5</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">IF</span>&nbsp;<span class="vv">Arr</span>[<span class="vv">i</span>]&nbsp;<input class="blank" id="fb2" placeholder="?" style="width:24px" data-ans=">">&nbsp;<span class="vv">Max</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">THEN</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Max</span>&nbsp;←&nbsp;<input class="blank" id="fb3" placeholder="??????" style="width:70px" data-ans="Arr[i]"></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ENDIF</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">NEXT</span>&nbsp;<span class="vv">i</span></div>
+        <div class="fill-row">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">RETURN</span>&nbsp;<input class="blank" id="fb4" placeholder="???" style="width:50px" data-ans="Max"></div>
+        <div class="fill-row"><span class="kw">ENDFUNCTION</span></div>
+      </div>`,
+  };
+
+  const renderKey=ex.render;
+  const bodyHtml=renders[renderKey]||'<p>Exercise content here.</p>';
+
+  return `<div class="ex-section active">
+    <div class="card">
+      <div class="card-head"><span class="badge badge-fill">▪ ${ex.label}</span><span class="pts">+${ex.xp} XP</span></div>
+      <div class="card-body">
+        ${bodyHtml}
+        <div class="fb" id="fb-fill-${idx}"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="checkFills(${idx})">Check</button>
+          <button class="btn btn-s" id="fill-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function checkFills(idx){
+  const inputs=document.querySelectorAll('input.blank');
+  let allOk=true,count=0,total=0;
+  inputs.forEach(inp=>{
+    total++;
+    const ans=norm(inp.dataset.ans||'');
+    const val=norm(inp.value);
+    // flexible matching: remove quotes for string comparison
+    const clean=(s)=>s.replace(/['"]/g,'');
+    const ok=val===ans||clean(val)===clean(ans);
+    inp.classList.toggle('ok',ok);
+    inp.classList.toggle('bad',!ok);
+    inp.readOnly=ok;
+    if(ok) count++;
+    else allOk=false;
+  });
+  const fbEl=$id('fb-fill-'+idx);
+  if(allOk){
+    fbEl.className='fb on ok';
+    fbEl.innerHTML=`<strong>All correct!</strong> <span class="ex">${total} blanks filled perfectly.</span>`;
+    addXP(G.currentMod.exercises[idx].xp);
+    $id('fill-next-'+idx).style.display='inline-flex';
+  } else {
+    fbEl.className='fb on bad';
+    fbEl.innerHTML=`<strong>${count}/${total} correct.</strong> <span class="ex">Red blanks need fixing. Check keywords, data types, and operators carefully.</span>`;
+  }
+}
+
+// ══════════════════════════════════════
+// DRAG BUILDER
+// ══════════════════════════════════════
+const DRAG_DATA={
+  drag_m1:{
+    lines:[
+      {id:'d0',t:'<span class="kw">DECLARE</span> <span class="vv">Age</span> : <span class="kw">INTEGER</span>',i:0},
+      {id:'d1',t:'<span class="kw">DECLARE</span> <span class="vv">Name</span> : <span class="kw">STRING</span>',i:0},
+      {id:'d2',t:'<span class="kw">CONSTANT</span> <span class="vv">MaxAge</span> ← <span class="sv">120</span>',i:0},
+      {id:'d3',t:'<span class="kw">INPUT</span> <span class="vv">Age</span>',i:0},
+      {id:'d4',t:'<span class="kw">INPUT</span> <span class="vv">Name</span>',i:0},
+      {id:'d5',t:'<span class="kw">OUTPUT</span> <span class="sv">"Name: "</span>, <span class="vv">Name</span>, <span class="sv">" Age: "</span>, <span class="vv">Age</span>',i:0},
+    ],
+    expl:'Declarations and constants come first, then INPUT statements to get values, then OUTPUT to display them.'
+  },
+  drag_m2:{
+    lines:[
+      {id:'d0',t:'<span class="kw">DECLARE</span> <span class="vv">Radius</span> : <span class="kw">REAL</span>',i:0},
+      {id:'d1',t:'<span class="kw">CONSTANT</span> <span class="vv">Pi</span> ← <span class="sv">3.14159</span>',i:0},
+      {id:'d2',t:'<span class="kw">INPUT</span> <span class="vv">Radius</span>',i:0},
+      {id:'d3',t:'<span class="vv">Area</span> ← <span class="vv">Pi</span> * <span class="vv">Radius</span> ^ <span class="sv">2</span>',i:0},
+      {id:'d4',t:'<span class="vv">Area</span> ← <span class="kw">ROUND</span>(<span class="vv">Area</span>, <span class="sv">2</span>)',i:0},
+      {id:'d5',t:'<span class="kw">OUTPUT</span> <span class="sv">"Area = "</span>, <span class="vv">Area</span>',i:0},
+    ],
+    expl:'Declare variables and constants first. Get input. Then compute the expression. Round the result. Output last.'
+  },
+  drag_m3:{
+    lines:[
+      {id:'d0',t:'<span class="kw">IF</span> <span class="vv">Score</span> <span class="ov">>=</span> <span class="sv">70</span>',i:0},
+      {id:'d1',t:'<span class="kw">THEN</span>',i:1},
+      {id:'d2',t:'<span class="vv">Grade</span> ← <span class="sv">"A"</span>',i:2},
+      {id:'d3',t:'<span class="kw">ELSE</span>',i:1},
+      {id:'d4',t:'<span class="kw">IF</span> <span class="vv">Score</span> <span class="ov">>=</span> <span class="sv">50</span>',i:2},
+      {id:'d5',t:'<span class="kw">THEN</span>',i:3},
+      {id:'d6',t:'<span class="vv">Grade</span> ← <span class="sv">"B"</span>',i:4},
+      {id:'d7',t:'<span class="kw">ELSE</span>',i:3},
+      {id:'d8',t:'<span class="vv">Grade</span> ← <span class="sv">"C"</span>',i:4},
+      {id:'d9',t:'<span class="kw">ENDIF</span>',i:2},
+      {id:'d10',t:'<span class="kw">ENDIF</span>',i:0},
+    ],
+    expl:'The outer IF/THEN/ELSE/ENDIF wraps the inner one. THEN and ELSE are indented 2 spaces from IF. Each IF needs its own ENDIF.'
+  },
+  drag_m4:{
+    lines:[
+      {id:'d0',t:'<span class="kw">REPEAT</span>',i:0},
+      {id:'d1',t:'<span class="kw">OUTPUT</span> <span class="sv">"Enter a positive number: "</span>',i:1},
+      {id:'d2',t:'<span class="kw">INPUT</span> <span class="vv">Num</span>',i:1},
+      {id:'d3',t:'<span class="kw">UNTIL</span> <span class="vv">Num</span> <span class="ov">></span> <span class="sv">0</span>',i:0},
+      {id:'d4',t:'<span class="kw">OUTPUT</span> <span class="sv">"You entered: "</span>, <span class="vv">Num</span>',i:0},
+    ],
+    expl:'REPEAT comes first. The body (OUTPUT prompt, INPUT) is indented inside. UNTIL with the condition closes the loop. Output after the loop runs once confirmed.'
+  },
+  drag_m5:{
+    lines:[
+      {id:'d0',t:'<span class="kw">DECLARE</span> <span class="vv">Scores</span> : <span class="kw">ARRAY</span>[<span class="sv">1</span>:<span class="sv">5</span>] <span class="kw">OF</span> <span class="kw">INTEGER</span>',i:0},
+      {id:'d1',t:'<span class="vv">Total</span> ← <span class="sv">0</span>',i:0},
+      {id:'d2',t:'<span class="kw">FOR</span> <span class="vv">i</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">5</span>',i:0},
+      {id:'d3',t:'<span class="vv">Total</span> ← <span class="vv">Total</span> + <span class="vv">Scores</span>[<span class="vv">i</span>]',i:1},
+      {id:'d4',t:'<span class="kw">NEXT</span> <span class="vv">i</span>',i:0},
+      {id:'d5',t:'<span class="vv">Average</span> ← <span class="vv">Total</span> / <span class="sv">5</span>',i:0},
+      {id:'d6',t:'<span class="kw">OUTPUT</span> <span class="sv">"Average: "</span>, <span class="vv">Average</span>',i:0},
+    ],
+    expl:'Declare the array first. Initialise Total to 0. Loop from 1 to 5, adding each element. Close with NEXT. Compute average after the loop, then output.'
+  },
+  drag_m6:{
+    lines:[
+      {id:'d0',t:'<span class="kw">DECLARE</span> <span class="vv">Grid</span> : <span class="kw">ARRAY</span>[<span class="sv">1</span>:<span class="sv">3</span>, <span class="sv">1</span>:<span class="sv">3</span>] <span class="kw">OF</span> <span class="kw">INTEGER</span>',i:0},
+      {id:'d1',t:'<span class="kw">FOR</span> <span class="vv">Row</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">3</span>',i:0},
+      {id:'d2',t:'<span class="kw">FOR</span> <span class="vv">Col</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">3</span>',i:1},
+      {id:'d3',t:'<span class="vv">Grid</span>[<span class="vv">Row</span>, <span class="vv">Col</span>] ← <span class="vv">Row</span> * <span class="vv">Col</span>',i:2},
+      {id:'d4',t:'<span class="kw">NEXT</span> <span class="vv">Col</span>',i:1},
+      {id:'d5',t:'<span class="kw">NEXT</span> <span class="vv">Row</span>',i:0},
+    ],
+    expl:'Declare the 2D array first. Outer FOR Row, then inner FOR Col. Assignment inside both loops. NEXT Col closes inner loop — must come BEFORE NEXT Row.'
+  },
+  drag_m7:{
+    lines:[
+      {id:'d0',t:'<span class="kw">FUNCTION</span> <span class="vv">Double</span>(<span class="vv">N</span> : <span class="kw">INTEGER</span>) <span class="kw">RETURNS</span> <span class="kw">INTEGER</span>',i:0},
+      {id:'d1',t:'<span class="kw">RETURN</span> <span class="vv">N</span> * <span class="sv">2</span>',i:1},
+      {id:'d2',t:'<span class="kw">ENDFUNCTION</span>',i:0},
+      {id:'d3',t:'<span class="kw">PROCEDURE</span> <span class="vv">ShowDouble</span>(<span class="vv">X</span> : <span class="kw">INTEGER</span>)',i:0},
+      {id:'d4',t:'<span class="vv">Result</span> ← <span class="vv">Double</span>(<span class="vv">X</span>)',i:1},
+      {id:'d5',t:'<span class="kw">OUTPUT</span> <span class="sv">"Double is: "</span>, <span class="vv">Result</span>',i:1},
+      {id:'d6',t:'<span class="kw">ENDPROCEDURE</span>',i:0},
+      {id:'d7',t:'<span class="kw">CALL</span> <span class="vv">ShowDouble</span>(<span class="sv">5</span>)',i:0},
+    ],
+    expl:'Function definition comes first. RETURN is inside the function body. ENDFUNCTION closes it. Procedure definition uses ENDPROCEDURE. CALL is only used to invoke a procedure.'
+  },
+};
+
+function buildDrag(ex,idx){
+  const data=DRAG_DATA[ex.render];
+  if(!data) return '<p>Drag exercise data missing.</p>';
+  const shuffled=[...data.lines].sort(()=>Math.random()-.5);
+  let srcHtml=shuffled.map(item=>`
+    <div class="di" draggable="true" data-id="${item.id}" style="padding-left:${12+item.i*0}px" id="drag-item-${item.id}">
+      <span class="dh">⠿</span><span>${item.t}</span>
+    </div>`).join('');
+  return `<div class="ex-section active">
+    <div class="card">
+      <div class="card-head"><span class="badge badge-drag">⠿ ${ex.label}</span><span class="pts">+${ex.xp} XP</span></div>
+      <div class="card-body">
+        <p class="q">Drag these lines into the <strong>correct order</strong>. All lines must be placed.</p>
+        <div class="drag-zone-lbl">▸ Drop zone — drag lines here in order:</div>
+        <div class="drag-zone" id="drop-zone-${idx}" ondragover="dOver(event)" ondrop="dDrop(event,${idx})"></div>
+        <div class="drag-zone-lbl" style="margin-top:14px">▸ Source lines — drag from here:</div>
+        <div id="src-zone-${idx}">${srcHtml}</div>
+        <div class="fb" id="fb-drag-${idx}"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="checkDragEx(${idx})">Check order</button>
+          <button class="btn btn-s" onclick="resetDragEx(${idx})">↺ Reset</button>
+          <button class="btn btn-s" id="drag-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function initDragListeners(idx){
+  document.querySelectorAll('[data-id]').forEach(el=>{
+    el.addEventListener('dragstart',e=>{G.dragged=el;el.classList.add('dragging');});
+    el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+  });
+}
+function dOver(e){e.preventDefault();e.currentTarget.classList.add('ov');}
+function dDrop(e,idx){
+  e.preventDefault();
+  e.currentTarget.classList.remove('ov');
+  if(G.dragged){e.currentTarget.appendChild(G.dragged);G.dragged=null;}
+}
+function resetDragEx(idx){
+  const data=DRAG_DATA[G.currentMod.exercises[idx].render];
+  const shuffled=[...data.lines].sort(()=>Math.random()-.5);
+  const src=$id('src-zone-'+idx);
+  const drop=$id('drop-zone-'+idx);
+  drop.querySelectorAll('.di').forEach(el=>{el.classList.remove('ok','bad');src.appendChild(el);});
+  $id('fb-drag-'+idx).className='fb';
+}
+function checkDragEx(idx){
+  const data=DRAG_DATA[G.currentMod.exercises[idx].render];
+  const placed=[...$id('drop-zone-'+idx).querySelectorAll('.di')];
+  if(placed.length!==data.lines.length){
+    fb('fb-drag-'+idx,'hint',`<strong>Place all lines first.</strong> ${data.lines.length} lines needed, ${placed.length} placed.`);
+    return;
+  }
+  let correct=0;
+  placed.forEach((el,i)=>{
+    const ok=el.dataset.id===data.lines[i].id;
+    el.classList.toggle('ok',ok);
+    el.classList.toggle('bad',!ok);
+    if(ok)correct++;
+  });
+  if(correct===data.lines.length){
+    fb('fb-drag-'+idx,'ok',`<strong>Perfect!</strong> <span class="ex">${data.expl}</span>`);
+    addXP(G.currentMod.exercises[idx].xp);
+    $id('drag-next-'+idx).style.display='inline-flex';
+  } else {
+    fb('fb-drag-'+idx,'bad',`<strong>${correct}/${data.lines.length} lines correct.</strong> <span class="ex">Check the order again. ${data.expl}</span>`);
+  }
+}
+
+// ══════════════════════════════════════
+// FLOWCHART BUILDER
+// ══════════════════════════════════════
+function buildFlow(ex,idx){
+  const flows={
+    flow_m3:{
+      height:400,
+      svg:`<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#343d55" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+        <line x1="300" y1="50" x2="300" y2="100" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="268" y1="153" x2="170" y2="153" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <text x="220" y="143" font-family="JetBrains Mono" font-size="10" fill="#34d399" text-anchor="middle">TRUE</text>
+        <line x1="332" y1="153" x2="430" y2="153" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <text x="380" y="143" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">FALSE</text>
+        <line x1="170" y1="183" x2="170" y2="310" stroke="#343d55" stroke-width="1"/>
+        <line x1="170" y1="310" x2="280" y2="310" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="430" y1="183" x2="430" y2="310" stroke="#343d55" stroke-width="1"/>
+        <line x1="430" y1="310" x2="320" y2="310" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="300" y1="330" x2="300" y2="368" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>`,
+      nodes:[
+        {type:'oval',x:250,y:18,w:100,h:30,label:'START',fixed:true},
+        {type:'diamond',x:240,y:100,w:120,h:55,inp:'fc1',ph:'condition?'},
+        {type:'rect',x:110,y:153,w:120,h:30,inp:'fc2',ph:'OUTPUT ...'},
+        {type:'rect',x:370,y:153,w:120,h:30,inp:'fc3',ph:'OUTPUT ...'},
+        {type:'oval',x:250,y:308,w:100,h:30,label:'END',fixed:true},
+      ],
+      answers:{fc1:'MARK >= 50',fc2:'OUTPUT "Pass"',fc3:'OUTPUT "Fail"'},
+      expl:'The diamond holds the condition (Mark >= 50). TRUE branch → OUTPUT "Pass". FALSE branch → OUTPUT "Fail".'
+    },
+    flow_m4:{
+      height:440,
+      svg:`<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#343d55" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+        <line x1="300" y1="48" x2="300" y2="95" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="268" y1="148" x2="110" y2="148" stroke="#343d55" stroke-width="1"/>
+        <text x="190" y="138" font-family="JetBrains Mono" font-size="10" fill="#34d399" text-anchor="middle">TRUE</text>
+        <line x1="110" y1="148" x2="110" y2="240" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="110" y1="270" x2="110" y2="120" stroke="#343d55" stroke-width="1"/>
+        <line x1="110" y1="120" x2="268" y2="120" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="332" y1="148" x2="450" y2="148" stroke="#343d55" stroke-width="1"/>
+        <text x="392" y="138" font-family="JetBrains Mono" font-size="10" fill="#f87171" text-anchor="middle">FALSE</text>
+        <line x1="450" y1="148" x2="450" y2="370" stroke="#343d55" stroke-width="1"/>
+        <line x1="450" y1="370" x2="340" y2="370" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>
+        <line x1="300" y1="390" x2="300" y2="415" stroke="#343d55" stroke-width="1" marker-end="url(#a)"/>`,
+      nodes:[
+        {type:'oval',x:250,y:16,w:100,h:28,label:'START',fixed:true},
+        {type:'diamond',x:238,y:95,w:124,h:55,inp:'fc1',ph:'condition?'},
+        {type:'rect',x:50,y:240,w:120,h:30,inp:'fc2',ph:'body statement'},
+        {type:'oval',x:250,y:368,w:100,h:28,label:'END',fixed:true},
+      ],
+      answers:{fc1:'Num <> 0',fc2:'INPUT Num'},
+      expl:'WHILE loop: condition diamond at top. TRUE branch loops back through body. FALSE exits. The body contains INPUT Num.'
+    },
+  };
+  const flow=flows[ex.render];
+  if(!flow)return'<p>Flow data missing.</p>';
+  let nodesHtml='';
+  flow.nodes.forEach(n=>{
+    if(n.fixed){
+      nodesHtml+=`<div class="fc-node fc-oval" style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${n.label}</span></div>`;
+    } else if(n.type==='diamond'){
+      nodesHtml+=`<div class="fc-node" style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px">
+        <div style="width:${n.h}px;height:${n.h}px;background:var(--bg2);border:1px solid rgba(192,132,252,0.4);transform:rotate(45deg);position:absolute;left:${(n.w-n.h)/2}px"></div>
+        <input class="fc-inp" id="${n.inp}" placeholder="${n.ph}" style="position:relative;z-index:1;width:${n.w-20}px" autocomplete="off" spellcheck="false">
+      </div>`;
+    } else {
+      nodesHtml+=`<div class="fc-node fc-rect" style="left:${n.x}px;top:${n.y}px;width:${n.w}px;height:${n.h}px">
+        <input class="fc-inp" id="${n.inp}" placeholder="${n.ph}" style="width:${n.w-12}px" autocomplete="off" spellcheck="false">
+      </div>`;
+    }
+  });
+  return `<div class="ex-section active">
+    <div class="card">
+      <div class="card-head"><span class="badge badge-flow">◇ ${ex.label}</span><span class="pts">+${ex.xp} XP</span></div>
+      <div class="card-body">
+        <p class="q">Type the correct values into each blank shape in the flowchart.</p>
+        <div class="fc-wrap" style="height:${flow.height}px;margin-bottom:14px">
+          <svg class="fc-svg" viewBox="0 0 600 ${flow.height}">${flow.svg}</svg>
+          ${nodesHtml}
+        </div>
+        <div class="fb" id="fb-flow-${idx}"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="checkFlow(${idx})">Check flowchart</button>
+          <button class="btn btn-s" id="flow-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function checkFlow(idx){
+  const ex=G.currentMod.exercises[idx];
+  const flows={flow_m3:{fc1:'MARK >= 50',fc2:'OUTPUT "PASS"',fc3:'OUTPUT "FAIL"'},flow_m4:{fc1:'NUM <> 0',fc2:'INPUT NUM'}};
+  const answers=flows[ex.render];
+  if(!answers)return;
+  let allOk=true;
+  Object.entries(answers).forEach(([id,ans])=>{
+    const el=$id(id);
+    if(!el)return;
+    const val=el.value.trim().toUpperCase().replace(/['"]/g,'"').replace(/\s+/g,' ');
+    const exp=ans.toUpperCase().replace(/['"]/g,'"');
+    const ok=val===exp||val.replace(/['"]/g,'')===exp.replace(/['"]/g,'');
+    el.classList.toggle('ok',ok);
+    el.classList.toggle('bad',!ok);
+    if(!ok)allOk=false;
+  });
+  const fbEl=$id('fb-flow-'+idx);
+  const flowData={flow_m3:{expl:'Diamond: Mark >= 50. TRUE→OUTPUT "Pass". FALSE→OUTPUT "Fail".'},flow_m4:{expl:'Diamond: Num <> 0. TRUE→loop body (INPUT Num). FALSE→exit.'}};
+  if(allOk){
+    fbEl.className='fb on ok';
+    fbEl.innerHTML=`<strong>Flowchart complete!</strong> <span class="ex">${(flowData[ex.render]||{}).expl||''}</span>`;
+    addXP(ex.xp);
+    $id('flow-next-'+idx).style.display='inline-flex';
+  } else {
+    fbEl.className='fb on bad';
+    fbEl.innerHTML=`<strong>Some shapes are wrong.</strong> <span class="ex">${(flowData[ex.render]||{}).expl||'Check each shape against the pseudocode.'}</span>`;
+  }
+}
+
+// ══════════════════════════════════════
+// TRACE TABLE BUILDER
+// ══════════════════════════════════════
+const TRACE_DATA={
+  trace_m1:{
+    code:`<span class="ln">1</span><span class="vv">X</span> ← <span class="sv">5</span><br>
+<span class="ln">2</span><span class="vv">Y</span> ← <span class="sv">3</span><br>
+<span class="ln">3</span><span class="vv">Z</span> ← <span class="vv">X</span> + <span class="vv">Y</span><br>
+<span class="ln">4</span><span class="vv">X</span> ← <span class="vv">X</span> * <span class="sv">2</span><br>
+<span class="ln">5</span><span class="kw">OUTPUT</span> <span class="vv">X</span>, <span class="vv">Z</span>`,
+    headers:['Line','X','Y','Z','OUTPUT'],
+    rows:[
+      {line:'1',cells:{X:'5',Y:'-',Z:'-',OUTPUT:'-'}},
+      {line:'2',cells:{X:'5',Y:'3',Z:'-',OUTPUT:'-'}},
+      {line:'3',cells:{X:'5',Y:'3',Z:'8',OUTPUT:'-'}},
+      {line:'4',cells:{X:'10',Y:'3',Z:'8',OUTPUT:'-'}},
+      {line:'5',cells:{X:'10',Y:'3',Z:'8',OUTPUT:'10 8'}},
+    ],
+    expl:'Line 1: X=5. Line 2: Y=3. Line 3: Z=5+3=8. Line 4: X=5*2=10 (old X used). Line 5: outputs current X=10, Z=8.'
+  },
+  trace_m2:{
+    code:`<span class="ln">1</span><span class="vv">A</span> ← <span class="kw">MOD</span>(<span class="sv">17</span>, <span class="sv">5</span>)<br>
+<span class="ln">2</span><span class="vv">B</span> ← <span class="kw">DIV</span>(<span class="sv">17</span>, <span class="sv">5</span>)<br>
+<span class="ln">3</span><span class="vv">C</span> ← <span class="kw">LENGTH</span>(<span class="sv">"IGCSE"</span>)<br>
+<span class="ln">4</span><span class="kw">OUTPUT</span> <span class="vv">A</span>, <span class="vv">B</span>, <span class="vv">C</span>`,
+    headers:['Line','A','B','C','OUTPUT'],
+    rows:[
+      {line:'1',cells:{A:'2',B:'-',C:'-',OUTPUT:'-'}},
+      {line:'2',cells:{A:'2',B:'3',C:'-',OUTPUT:'-'}},
+      {line:'3',cells:{A:'2',B:'3',C:'5',OUTPUT:'-'}},
+      {line:'4',cells:{A:'2',B:'3',C:'5',OUTPUT:'2 3 5'}},
+    ],
+    expl:'MOD(17,5)=2 (remainder). DIV(17,5)=3 (quotient). LENGTH("IGCSE")=5 characters. Output all three.'
+  },
+  trace_m3:{
+    code:`<span class="ln">1</span><span class="kw">IF</span> <span class="vv">Score</span> <span class="ov">>=</span> <span class="sv">70</span><br>
+<span class="ln">2</span>&nbsp;&nbsp;<span class="kw">THEN</span> <span class="vv">Grade</span> ← <span class="sv">"A"</span><br>
+<span class="ln">3</span>&nbsp;&nbsp;<span class="kw">ELSE</span><br>
+<span class="ln">4</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">IF</span> <span class="vv">Score</span> <span class="ov">>=</span> <span class="sv">50</span><br>
+<span class="ln">5</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">THEN</span> <span class="vv">Grade</span> ← <span class="sv">"B"</span><br>
+<span class="ln">6</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ELSE</span> <span class="vv">Grade</span> ← <span class="sv">"C"</span><br>
+<span class="ln">7</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ENDIF</span><br>
+<span class="ln">8</span><span class="kw">ENDIF</span>`,
+    headers:['Run','Score','Grade','OUTPUT'],
+    rows:[
+      {line:'1',cells:{Score:'85',Grade:'A',OUTPUT:'A'}},
+      {line:'2',cells:{Score:'62',Grade:'B',OUTPUT:'B'}},
+      {line:'3',cells:{Score:'41',Grade:'C',OUTPUT:'C'}},
+      {line:'4',cells:{Score:'70',Grade:'A',OUTPUT:'A'}},
+    ],
+    note:'Test runs: 85, 62, 41, 70',
+    expl:'85≥70→A. 62<70 but ≥50→B. 41<50→C. 70≥70→A (boundary value, takes THEN branch).'
+  },
+  trace_m4:{
+    code:`<span class="ln">1</span><span class="vv">Total</span> ← <span class="sv">0</span><br>
+<span class="ln">2</span><span class="kw">FOR</span> <span class="vv">i</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">4</span><br>
+<span class="ln">3</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Total</span> ← <span class="vv">Total</span> + <span class="vv">i</span><br>
+<span class="ln">4</span><span class="kw">NEXT</span> <span class="vv">i</span><br>
+<span class="ln">5</span><span class="kw">OUTPUT</span> <span class="vv">Total</span>`,
+    headers:['i','Total after line 3'],
+    rows:[
+      {line:'1',cells:{i:'1','Total after line 3':'1'}},
+      {line:'2',cells:{i:'2','Total after line 3':'3'}},
+      {line:'3',cells:{i:'3','Total after line 3':'6'}},
+      {line:'4',cells:{i:'4','Total after line 3':'10'}},
+    ],
+    note:'Total starts at 0. Final OUTPUT = 10',
+    expl:'Each iteration adds i to Total. 0+1=1, 1+2=3, 3+3=6, 6+4=10. OUTPUT is 10.'
+  },
+  trace_m5:{
+    code:`<span class="cv">// Scores = [8, 5, 9, 3, 7]</span><br>
+<span class="ln">1</span><span class="vv">Max</span> ← <span class="vv">Scores</span>[<span class="sv">1</span>]<br>
+<span class="ln">2</span><span class="kw">FOR</span> <span class="vv">i</span> ← <span class="sv">2</span> <span class="kw">TO</span> <span class="sv">5</span><br>
+<span class="ln">3</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">IF</span> <span class="vv">Scores</span>[<span class="vv">i</span>] <span class="ov">></span> <span class="vv">Max</span><br>
+<span class="ln">4</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">THEN</span> <span class="vv">Max</span> ← <span class="vv">Scores</span>[<span class="vv">i</span>]<br>
+<span class="ln">5</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">ENDIF</span><br>
+<span class="ln">6</span><span class="kw">NEXT</span> <span class="vv">i</span>`,
+    headers:['i','Scores[i]','Max updated?','Max'],
+    rows:[
+      {line:'2',cells:{i:'2','Scores[i]':'5','Max updated?':'No','Max':'8'}},
+      {line:'3',cells:{i:'3','Scores[i]':'9','Max updated?':'Yes','Max':'9'}},
+      {line:'4',cells:{i:'4','Scores[i]':'3','Max updated?':'No','Max':'9'}},
+      {line:'5',cells:{i:'5','Scores[i]':'7','Max updated?':'No','Max':'9'}},
+    ],
+    note:'Max starts as Scores[1] = 8',
+    expl:'Max starts at 8. i=2: 5<8 no update. i=3: 9>8 update to 9. i=4: 3<9 no. i=5: 7<9 no. Final Max=9.'
+  },
+  trace_m6:{
+    code:`<span class="cv">// 2×2 Grid, Row*Col</span><br>
+<span class="ln">1</span><span class="kw">FOR</span> <span class="vv">Row</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">2</span><br>
+<span class="ln">2</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">FOR</span> <span class="vv">Col</span> ← <span class="sv">1</span> <span class="kw">TO</span> <span class="sv">2</span><br>
+<span class="ln">3</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="vv">Grid</span>[<span class="vv">Row</span>,<span class="vv">Col</span>] ← <span class="vv">Row</span> * <span class="vv">Col</span><br>
+<span class="ln">4</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">NEXT</span> <span class="vv">Col</span><br>
+<span class="ln">5</span><span class="kw">NEXT</span> <span class="vv">Row</span>`,
+    headers:['Row','Col','Grid[Row,Col]'],
+    rows:[
+      {line:'1',cells:{Row:'1',Col:'1','Grid[Row,Col]':'1'}},
+      {line:'2',cells:{Row:'1',Col:'2','Grid[Row,Col]':'2'}},
+      {line:'3',cells:{Row:'2',Col:'1','Grid[Row,Col]':'2'}},
+      {line:'4',cells:{Row:'2',Col:'2','Grid[Row,Col]':'4'}},
+    ],
+    expl:'Row=1,Col=1: 1*1=1. Row=1,Col=2: 1*2=2. Row=2,Col=1: 2*1=2. Row=2,Col=2: 2*2=4.'
+  },
+  trace_m7:{
+    code:`<span class="kw">FUNCTION</span> <span class="vv">AddTen</span>(<span class="vv">N</span>:<span class="kw">INTEGER</span>) <span class="kw">RETURNS</span> <span class="kw">INTEGER</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">RETURN</span> <span class="vv">N</span> + <span class="sv">10</span><br>
+<span class="kw">ENDFUNCTION</span><br>
+<span class="ln">1</span><span class="vv">A</span> ← <span class="sv">5</span><br>
+<span class="ln">2</span><span class="vv">B</span> ← <span class="vv">AddTen</span>(<span class="vv">A</span>)<br>
+<span class="ln">3</span><span class="vv">C</span> ← <span class="vv">AddTen</span>(<span class="vv">B</span>)<br>
+<span class="ln">4</span><span class="kw">OUTPUT</span> <span class="vv">A</span>, <span class="vv">B</span>, <span class="vv">C</span>`,
+    headers:['Line','A','B','C','OUTPUT'],
+    rows:[
+      {line:'1',cells:{A:'5',B:'-',C:'-',OUTPUT:'-'}},
+      {line:'2',cells:{A:'5',B:'15',C:'-',OUTPUT:'-'}},
+      {line:'3',cells:{A:'5',B:'15',C:'25',OUTPUT:'-'}},
+      {line:'4',cells:{A:'5',B:'15',C:'25',OUTPUT:'5 15 25'}},
+    ],
+    expl:'A=5. B=AddTen(5)=15. C=AddTen(15)=25. OUTPUT all three: 5 15 25.'
+  },
+};
+
+function buildTrace(ex,idx){
+  const data=TRACE_DATA[ex.render];
+  if(!data) return '<p>Trace data missing.</p>';
+  const hdrs=data.headers;
+  let headHtml=hdrs.map(h=>`<th>${h}</th>`).join('');
+  let bodyHtml='';
+  data.rows.forEach((row,ri)=>{
+    let rowHtml='<tr>';
+    hdrs.forEach((h,hi)=>{
+      if(hi===0){
+        rowHtml+=`<td class="static">${row.line}</td>`;
+      } else {
+        const ans=row.cells[h]||'';
+        rowHtml+=`<td id="tt-${idx}-${ri}-${hi}"><input placeholder="?" data-ans="${ans.replace(/"/g,'&quot;')}" autocomplete="off" spellcheck="false"></td>`;
+      }
+    });
+    rowHtml+='</tr>';
+    bodyHtml+=rowHtml;
+  });
+  return `<div class="ex-section active">
+    <div class="card">
+      <div class="card-head"><span class="badge badge-trace">▦ ${ex.label}</span><span class="pts">+${ex.xp} XP</span></div>
+      <div class="card-body">
+        <p class="q">Complete the trace table by following the code step by step.${data.note?'<br><span style="color:var(--text2);font-size:12px">'+data.note+'</span>':''}</p>
+        <div class="cb" style="margin-bottom:16px">${data.code}</div>
+        <div style="overflow-x:auto;margin-bottom:14px">
+          <table class="tt"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>
+        </div>
+        <div class="fb" id="fb-trace-${idx}"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="checkTrace(${idx})">Check trace</button>
+          <button class="btn btn-s" id="trace-next-${idx}" style="display:none" onclick="nextEx()">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function checkTrace(idx){
+  const ex=G.currentMod.exercises[idx];
+  const data=TRACE_DATA[ex.render];
+  const hdrs=data.headers;
+  let correct=0,total=0;
+  data.rows.forEach((row,ri)=>{
+    hdrs.forEach((h,hi)=>{
+      if(hi===0) return;
+      total++;
+      const cell=$id('tt-'+idx+'-'+ri+'-'+hi);
+      if(!cell) return;
+      const inp=cell.querySelector('input');
+      if(!inp) return;
+      const ans=inp.dataset.ans.replace(/&quot;/g,'"');
+      const val=inp.value.trim().toUpperCase().replace(/['"]/g,'');
+      const exp=ans.toUpperCase().replace(/['"]/g,'');
+      const ok=val===exp;
+      cell.classList.toggle('ok',ok);
+      cell.classList.toggle('bad',!ok);
+      if(ok) correct++;
+    });
+  });
+  const fbEl=$id('fb-trace-'+idx);
+  if(correct===total){
+    fbEl.className='fb on ok';
+    fbEl.innerHTML=`<strong>Perfect trace!</strong> <span class="ex">${data.expl}</span>`;
+    addXP(ex.xp);
+    $id('trace-next-'+idx).style.display='inline-flex';
+    // if last exercise mark done
+    if(idx===G.currentMod.exercises.length-1) markExDone(idx);
+  } else {
+    fbEl.className='fb on bad';
+    fbEl.innerHTML=`<strong>${correct}/${total} cells correct.</strong> <span class="ex">${data.expl}</span>`;
+  }
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+buildHome();
+</script>
+</body>
+</html>
