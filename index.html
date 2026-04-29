@@ -223,10 +223,26 @@ input.blank.bad{border-color:var(--coral)!important;color:var(--coral);backgroun
 .fc-inp{background:transparent;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);outline:none;text-align:center;width:100%}
 .fc-inp.ok{color:var(--accent)}
 .fc-inp.bad{color:var(--coral)}
+
+/* ─── REVEAL BUTTON ─── */
+.btn-reveal{display:none;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid rgba(251,191,36,0.35);background:rgba(251,191,36,0.07);color:var(--amber);font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-reveal:hover{background:rgba(251,191,36,0.15);border-color:var(--amber)}
+.btn-reveal.visible{display:inline-flex}
+
+/* ─── SAVE FLASH ─── */
+@keyframes savepulse{0%{opacity:1;transform:scale(1)}50%{opacity:.8;transform:scale(1.15)}100%{opacity:0;transform:scale(1)}}
+.save-flash{position:fixed;bottom:18px;right:18px;background:var(--bg1);border:1px solid rgba(0,245,160,0.3);border-radius:8px;padding:7px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);z-index:500;opacity:0;pointer-events:none;transition:opacity .3s}
+.save-flash.show{animation:saveshow 2s ease forwards}
+@keyframes saveshow{0%{opacity:0;transform:translateY(4px)}15%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+
+/* ─── MODULE RESET BUTTON ─── */
+.mod-reset-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text3);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s;white-space:nowrap}
+.mod-reset-btn:hover{border-color:var(--coral);color:var(--coral)}
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
+<div class="save-flash" id="save-flash">💾 Progress saved</div>
 
 <!-- ════════════════════ HOME ════════════════════ -->
 <div id="home" class="screen active">
@@ -245,6 +261,12 @@ input.blank.bad{border-color:var(--coral)!important;color:var(--coral);backgroun
       <div class="stat"><span class="stat-num">700</span><span class="stat-label">XP to earn</span></div>
     </div>
     <div class="module-grid" id="home-grid"></div>
+    <div style="margin-top:32px">
+      <button onclick="if(confirm('Reset all progress? This cannot be undone.'))clearProgress()"
+        style="background:transparent;border:1px solid var(--border2);border-radius:7px;padding:6px 14px;font-size:12px;color:var(--text3);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .2s"
+        onmouseover="this.style.borderColor='var(--coral)';this.style.color='var(--coral)'"
+        onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">↺ Reset all progress</button>
+    </div>
   </div>
 </div>
 
@@ -262,6 +284,7 @@ input.blank.bad{border-color:var(--coral)!important;color:var(--coral);backgroun
         <div class="xp-track"><div class="xp-fill" id="xp-fill" style="background:linear-gradient(90deg,var(--accent2),var(--accent))"></div></div>
         <span class="xp-txt" id="xp-txt">0/120</span>
       </div>
+      <button class="mod-reset-btn" onclick="resetModule()" title="Reset this module's progress">↺ Reset module</button>
       <button class="hint-pill" onclick="triggerHint()">💡 Hint (−5)</button>
       <button class="ref-pill" id="ref-btn" onclick="toggleRef()">// ref</button>
     </div>
@@ -291,22 +314,96 @@ const G = {
   maxXp: 0,
   currentMod: null,
   currentEx: 0,
-  exDone: {},       // mod -> set of done ex indices
-  modDone: {},      // mod -> bool
-  modXp: {},        // mod -> xp earned
-  exState: {},      // ephemeral per-exercise
+  exDone: {},        // mod -> Set of done ex indices
+  modDone: {},       // mod -> bool
+  modXp: {},         // mod -> xp earned
+  attempted: {},     // exKey -> bool  (has student tried at least once?)
   dragged: null,
   refOpen: false,
 };
 
 function $id(id){return document.getElementById(id)}
+
+// ══════════════════════════════════════
+// SAVE / LOAD / CLEAR  (cookie-based)
+// ══════════════════════════════════════
+function saveProgress(){
+  try{
+    const data={
+      modDone:   G.modDone,
+      modXp:     G.modXp,
+      attempted: G.attempted,
+      exDone:    {},
+    };
+    Object.keys(G.exDone).forEach(k=>{ data.exDone[k]=[...G.exDone[k]]; });
+    localStorage.setItem('pqprogress', JSON.stringify(data));
+    const sf=$id('save-flash');
+    sf.classList.remove('show');
+    void sf.offsetWidth;
+    sf.classList.add('show');
+  }catch(e){console.warn('Save failed:',e);}
+}
+
+function loadProgress(){
+  try{
+    const raw=localStorage.getItem('pqprogress');
+    if(!raw) return;
+    const data=JSON.parse(raw);
+    G.modDone  = data.modDone  || {};
+    G.modXp    = data.modXp    || {};
+    G.attempted= data.attempted|| {};
+    G.exDone   = {};
+    Object.keys(data.exDone||{}).forEach(k=>{ G.exDone[k]=new Set(data.exDone[k]); });
+  }catch(e){console.warn('Load failed:',e);}
+}
+
+function clearProgress(){
+  localStorage.removeItem('pqprogress');
+  G.modDone={}; G.modXp={}; G.exDone={}; G.attempted={};
+  buildHome();
+  showToast('Progress cleared');
+}
+
+// Reset a single module — wipes its XP, completed exercises, and attempted flags
+function resetModule(){
+  const m=G.currentMod;
+  if(!m) return;
+  if(!confirm(`Reset all progress for "${m.name}"?\n\nThis clears your XP, unlocked exercises, and reveal history for this module only.`)) return;
+  delete G.modDone[m.id];
+  delete G.modXp[m.id];
+  G.exDone[m.id]=new Set();
+  // Clear attempted flags for all exercises in this module
+  m.exercises.forEach((_,i)=>{ delete G.attempted[m.id+'_'+i]; });
+  saveProgress();
+  showToast('Module reset ↺');
+  // Re-open the module from scratch
+  openModule(m);
+}
+
+// ══════════════════════════════════════
+// REVEAL ANSWERS SYSTEM
+// ══════════════════════════════════════
+// Called after every first attempt — shows the reveal button for this exercise
+function markAttempted(exKey){
+  G.attempted[exKey]=true;
+  saveProgress();
+  // Show all reveal buttons on the current page
+  document.querySelectorAll('.btn-reveal').forEach(b=>b.classList.add('visible'));
+}
+
+// Each exercise builder injects a reveal button. The onclick is exercise-specific.
+function revealBtnHtml(onclickFn, label='👁 Reveal answers'){
+  return `<button class="btn-reveal" onclick="${onclickFn}">${label}</button>`;
+}
 function norm(s){return String(s).trim().toUpperCase().replace(/\s+/g,' ')}
 function addXP(n){
   G.xp=Math.min(G.xp+n,G.maxXp);
+  G.modXp[G.currentMod.id]=G.xp;
   const pct=G.maxXp>0?(G.xp/G.maxXp*100):0;
   $id('xp-fill').style.width=pct+'%';
   $id('xp-txt').textContent=G.xp+'/'+G.maxXp;
   toast('+'+n+' XP ✦');
+  saveProgress();
 }
 function toast(msg){
   const t=$id('toast');
@@ -666,7 +763,6 @@ function goHome(){
 function openModule(m){
   G.currentMod=m;
   G.currentEx=0;
-  G.exState={};
   G.xp=G.modXp[m.id]||0;
   G.maxXp=m.maxXp;
   if(!G.exDone[m.id]) G.exDone[m.id]=new Set();
@@ -711,8 +807,8 @@ function buildTabs(){
 
 function renderEx(idx){
   G.currentEx=idx;
-  // Clear MCQ state so answers from a previous module/exercise don't block clicks
-  Object.keys(mcqSel).forEach(k => delete mcqSel[k]);
+  // Clear MCQ selection state so answers from previous exercises don't block clicks
+  Object.keys(mcqSel).forEach(k=>delete mcqSel[k]);
   buildTabs();
   const m=G.currentMod;
   const ex=m.exercises[idx];
@@ -729,6 +825,13 @@ function renderEx(idx){
 
   // re-attach drag listeners
   if(ex.type==='drag') initDragListeners(idx);
+
+  // If student already attempted this exercise, show reveal button immediately
+  const exKey=G.currentMod.id+'_'+idx;
+  if(G.attempted[exKey]){
+    document.querySelectorAll('.btn-reveal').forEach(b=>b.classList.add('visible'));
+  }
+
   window.scrollTo(0,0);
 }
 
@@ -736,13 +839,13 @@ function markExDone(idx){
   const m=G.currentMod;
   G.exDone[m.id].add(idx);
   G.modXp[m.id]=G.xp;
-  // unlock next tab
   const nextTab=$id('tab-'+(idx+1));
   if(nextTab) nextTab.classList.remove('locked');
   buildTabs();
-  // check if all done
+  saveProgress();   // auto-save on exercise completion
   if(idx===m.exercises.length-1){
     G.modDone[m.id]=true;
+    saveProgress();
     showCompletion();
     return;
   }
@@ -786,13 +889,17 @@ function buildMCQ(ex,idx){
       <div class="opts" id="mcq-${idx}-${qi}">`;
     ['A','B','C','D'].forEach((k,oi)=>{
       if(!q.opts[oi]) return;
-      html+=`<div class="opt" onclick="selOpt(this,'mcq-${idx}-${qi}','${k}',${idx},${qi})" data-val="${k}">
+      // Use data-* attributes instead of inline onclick so quotes in option text can't break the HTML
+      html+=`<div class="opt" data-grp="mcq-${idx}-${qi}" data-val="${k}" data-eidx="${idx}" data-qi="${qi}">
         <span class="opt-k">${k}</span><span>${q.opts[oi].replace(/\n/g,'<br>')}</span>
       </div>`;
     });
     html+=`</div>
       <div class="fb" id="fb-mcq-${idx}-${qi}"></div>
-      <div class="btn-row"><button class="btn btn-p" id="btn-mcq-${idx}-${qi}" onclick="checkOpt(${idx},${qi})" disabled>Check</button></div>
+      <div class="btn-row">
+        <button class="btn btn-p" id="btn-mcq-${idx}-${qi}" onclick="checkOpt(${idx},${qi})" disabled>Check</button>
+        ${revealBtnHtml(`revealMCQ(${idx},${qi})`)}
+      </div>
     </div></div>`;
   });
   html+=`<div class="btn-row" id="mcq-next-${idx}" style="display:none">
@@ -800,6 +907,18 @@ function buildMCQ(ex,idx){
   </div></div>`;
   return html;
 }
+
+// Single delegated click handler for all MCQ options — attached to document
+// so it works even after innerHTML is replaced
+document.addEventListener('click', function(e){
+  const opt = e.target.closest('.opt[data-grp]');
+  if(!opt) return;
+  const grp   = opt.dataset.grp;
+  const val   = opt.dataset.val;
+  const exIdx = parseInt(opt.dataset.eidx);
+  const qi    = parseInt(opt.dataset.qi);
+  selOpt(opt, grp, val, exIdx, qi);
+});
 
 const mcqSel={};
 function selOpt(el,grp,val,exIdx,qi){
@@ -809,6 +928,11 @@ function selOpt(el,grp,val,exIdx,qi){
   el.classList.add('sel');
   mcqSel[key]=val;
   $id('btn-mcq-'+exIdx+'-'+qi).disabled=false;
+}
+
+// Safe display text — strips outer quotes for option labels that contain HTML-breaking chars
+function safeOptText(s){
+  return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 function checkOpt(exIdx,qi){
   const m=G.currentMod;
@@ -830,9 +954,35 @@ function checkOpt(exIdx,qi){
   fbEl.innerHTML=correct?`<strong>Correct!</strong> <span class="ex">${q.expl}</span>`:`<strong>Not quite.</strong> <span class="ex">The answer is ${q.correct}. ${q.expl}</span>`;
   if(correct) addXP(Math.round(ex.xp/ex.questions.length));
 
+  // Mark this exercise as attempted after first check → show reveal button
+  markAttempted(G.currentMod.id+'_'+exIdx);
+
   // check if all done
   const allDone=ex.questions.every((_,i)=>mcqSel['mcq-'+exIdx+'-'+i+'_done']);
   if(allDone) $id('mcq-next-'+exIdx).style.display='flex';
+}
+
+// Reveal all MCQ answers in this exercise — forces correct highlights + unlocks next
+function revealMCQ(exIdx, specificQi){
+  const m=G.currentMod;
+  const ex=m.exercises[exIdx];
+  ex.questions.forEach((q,qi)=>{
+    const grp='mcq-'+exIdx+'-'+qi;
+    if(mcqSel[grp+'_done']) return; // already checked
+    mcqSel[grp+'_done']=true;
+    const btn=$id('btn-mcq-'+exIdx+'-'+qi);
+    if(btn) btn.disabled=true;
+    document.querySelectorAll('#'+grp+' .opt').forEach(o=>{
+      if(o.dataset.val===q.correct) o.classList.add('ok');
+      o.style.cursor='default';
+    });
+    const fbEl=$id('fb-mcq-'+exIdx+'-'+qi);
+    if(fbEl){
+      fbEl.className='fb on hint';
+      fbEl.innerHTML=`<strong>Answer revealed.</strong> <span class="ex">Correct answer is <strong>${q.correct}</strong>. ${q.expl}</span>`;
+    }
+  });
+  $id('mcq-next-'+exIdx).style.display='flex';
 }
 
 // ══════════════════════════════════════
@@ -958,6 +1108,7 @@ function buildFill(ex,idx){
         <div class="fb" id="fb-fill-${idx}"></div>
         <div class="btn-row">
           <button class="btn btn-p" onclick="checkFills(${idx})">Check</button>
+          ${revealBtnHtml(`revealFills(${idx})`)}
           <button class="btn btn-s" id="fill-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
         </div>
       </div>
@@ -972,7 +1123,6 @@ function checkFills(idx){
     total++;
     const ans=norm(inp.dataset.ans||'');
     const val=norm(inp.value);
-    // flexible matching: remove quotes for string comparison
     const clean=(s)=>s.replace(/['"]/g,'');
     const ok=val===ans||clean(val)===clean(ans);
     inp.classList.toggle('ok',ok);
@@ -982,6 +1132,10 @@ function checkFills(idx){
     else allOk=false;
   });
   const fbEl=$id('fb-fill-'+idx);
+
+  // Mark attempted after first check → show reveal button
+  markAttempted(G.currentMod.id+'_'+idx);
+
   if(allOk){
     fbEl.className='fb on ok';
     fbEl.innerHTML=`<strong>All correct!</strong> <span class="ex">${total} blanks filled perfectly.</span>`;
@@ -989,8 +1143,25 @@ function checkFills(idx){
     $id('fill-next-'+idx).style.display='inline-flex';
   } else {
     fbEl.className='fb on bad';
-    fbEl.innerHTML=`<strong>${count}/${total} correct.</strong> <span class="ex">Red blanks need fixing. Check keywords, data types, and operators carefully.</span>`;
+    fbEl.innerHTML=`<strong>${count}/${total} correct.</strong> <span class="ex">Red blanks need fixing — check keywords, data types, and operators carefully.</span>`;
   }
+}
+
+// Reveal all fill answers — fills in correct values, marks as green, unlocks next
+function revealFills(idx){
+  const inputs=document.querySelectorAll('input.blank');
+  inputs.forEach(inp=>{
+    const ans=inp.dataset.ans||'';
+    // Show the clean answer (strip outer quotes for display)
+    inp.value=ans.replace(/^["']|["']$/g,'');
+    inp.classList.remove('bad');
+    inp.classList.add('ok');
+    inp.readOnly=true;
+  });
+  const fbEl=$id('fb-fill-'+idx);
+  fbEl.className='fb on hint';
+  fbEl.innerHTML=`<strong>Answers revealed.</strong> <span class="ex">Study these carefully — the next exercise will build on this syntax.</span>`;
+  $id('fill-next-'+idx).style.display='inline-flex';
 }
 
 // ══════════════════════════════════════
@@ -1104,6 +1275,7 @@ function buildDrag(ex,idx){
         <div class="btn-row">
           <button class="btn btn-p" onclick="checkDragEx(${idx})">Check order</button>
           <button class="btn btn-s" onclick="resetDragEx(${idx})">↺ Reset</button>
+          ${revealBtnHtml(`revealDrag(${idx})`)}
           <button class="btn btn-s" id="drag-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
         </div>
       </div>
@@ -1124,7 +1296,6 @@ function dDrop(e,idx){
 }
 function resetDragEx(idx){
   const data=DRAG_DATA[G.currentMod.exercises[idx].render];
-  const shuffled=[...data.lines].sort(()=>Math.random()-.5);
   const src=$id('src-zone-'+idx);
   const drop=$id('drop-zone-'+idx);
   drop.querySelectorAll('.di').forEach(el=>{el.classList.remove('ok','bad');src.appendChild(el);});
@@ -1144,6 +1315,8 @@ function checkDragEx(idx){
     el.classList.toggle('bad',!ok);
     if(ok)correct++;
   });
+  // Mark attempted after first real check
+  markAttempted(G.currentMod.id+'_'+idx);
   if(correct===data.lines.length){
     fb('fb-drag-'+idx,'ok',`<strong>Perfect!</strong> <span class="ex">${data.expl}</span>`);
     addXP(G.currentMod.exercises[idx].xp);
@@ -1151,6 +1324,23 @@ function checkDragEx(idx){
   } else {
     fb('fb-drag-'+idx,'bad',`<strong>${correct}/${data.lines.length} lines correct.</strong> <span class="ex">Check the order again. ${data.expl}</span>`);
   }
+}
+
+// Reveal correct drag order — moves all lines into drop zone in the right sequence
+function revealDrag(idx){
+  const data=DRAG_DATA[G.currentMod.exercises[idx].render];
+  const drop=$id('drop-zone-'+idx);
+  const src=$id('src-zone-'+idx);
+  // Move everything back to source first
+  drop.querySelectorAll('.di').forEach(el=>src.appendChild(el));
+  src.querySelectorAll('.di').forEach(el=>src.appendChild(el));
+  // Now place in correct order into drop zone
+  data.lines.forEach(line=>{
+    const el=document.querySelector(`.di[data-id="${line.id}"]`);
+    if(el){el.classList.add('ok');el.classList.remove('bad');drop.appendChild(el);}
+  });
+  fb('fb-drag-'+idx,'hint',`<strong>Correct order revealed.</strong> <span class="ex">${data.expl}</span>`);
+  $id('drag-next-'+idx).style.display='inline-flex';
 }
 
 // ══════════════════════════════════════
@@ -1234,6 +1424,7 @@ function buildFlow(ex,idx){
         <div class="fb" id="fb-flow-${idx}"></div>
         <div class="btn-row">
           <button class="btn btn-p" onclick="checkFlow(${idx})">Check flowchart</button>
+          ${revealBtnHtml(`revealFlow(${idx})`)}
           <button class="btn btn-s" id="flow-next-${idx}" style="display:none" onclick="nextEx()">Next exercise →</button>
         </div>
       </div>
@@ -1256,6 +1447,8 @@ function checkFlow(idx){
     el.classList.toggle('bad',!ok);
     if(!ok)allOk=false;
   });
+  // Mark attempted after first check
+  markAttempted(G.currentMod.id+'_'+idx);
   const fbEl=$id('fb-flow-'+idx);
   const flowData={flow_m3:{expl:'Diamond: Mark >= 50. TRUE→OUTPUT "Pass". FALSE→OUTPUT "Fail".'},flow_m4:{expl:'Diamond: Num <> 0. TRUE→loop body (INPUT Num). FALSE→exit.'}};
   if(allOk){
@@ -1267,6 +1460,26 @@ function checkFlow(idx){
     fbEl.className='fb on bad';
     fbEl.innerHTML=`<strong>Some shapes are wrong.</strong> <span class="ex">${(flowData[ex.render]||{}).expl||'Check each shape against the pseudocode.'}</span>`;
   }
+}
+
+// Reveal flowchart answers — fills each input with correct value
+function revealFlow(idx){
+  const ex=G.currentMod.exercises[idx];
+  const flows={flow_m3:{fc1:'Mark >= 50',fc2:'OUTPUT "Pass"',fc3:'OUTPUT "Fail"'},flow_m4:{fc1:'Num <> 0',fc2:'INPUT Num'}};
+  const answers=flows[ex.render];
+  if(!answers)return;
+  Object.entries(answers).forEach(([id,ans])=>{
+    const el=$id(id);
+    if(!el)return;
+    el.value=ans;
+    el.classList.remove('bad');
+    el.classList.add('ok');
+    el.readOnly=true;
+  });
+  const fbEl=$id('fb-flow-'+idx);
+  fbEl.className='fb on hint';
+  fbEl.innerHTML=`<strong>Answers revealed.</strong> <span class="ex">Study how the flowchart shapes map to the pseudocode structure.</span>`;
+  $id('flow-next-'+idx).style.display='inline-flex';
 }
 
 // ══════════════════════════════════════
@@ -1422,6 +1635,7 @@ function buildTrace(ex,idx){
         <div class="fb" id="fb-trace-${idx}"></div>
         <div class="btn-row">
           <button class="btn btn-p" onclick="checkTrace(${idx})">Check trace</button>
+          ${revealBtnHtml(`revealTrace(${idx})`)}
           <button class="btn btn-s" id="trace-next-${idx}" style="display:none" onclick="nextEx()">Next →</button>
         </div>
       </div>
@@ -1451,23 +1665,52 @@ function checkTrace(idx){
       if(ok) correct++;
     });
   });
+  // Mark attempted after first check → show reveal button
+  markAttempted(G.currentMod.id+'_'+idx);
   const fbEl=$id('fb-trace-'+idx);
   if(correct===total){
     fbEl.className='fb on ok';
     fbEl.innerHTML=`<strong>Perfect trace!</strong> <span class="ex">${data.expl}</span>`;
     addXP(ex.xp);
     $id('trace-next-'+idx).style.display='inline-flex';
-    // if last exercise mark done
-    if(idx===G.currentMod.exercises.length-1) markExDone(idx);
+    // Do NOT call markExDone here — let student click Next themselves
+    // so they can review the completed table before moving on
   } else {
     fbEl.className='fb on bad';
     fbEl.innerHTML=`<strong>${correct}/${total} cells correct.</strong> <span class="ex">${data.expl}</span>`;
   }
 }
 
+// Reveal trace table answers — fills every cell, stays on page for review
+function revealTrace(idx){
+  const ex=G.currentMod.exercises[idx];
+  const data=TRACE_DATA[ex.render];
+  const hdrs=data.headers;
+  data.rows.forEach((row,ri)=>{
+    hdrs.forEach((h,hi)=>{
+      if(hi===0) return;
+      const cell=$id('tt-'+idx+'-'+ri+'-'+hi);
+      if(!cell) return;
+      const inp=cell.querySelector('input');
+      if(!inp) return;
+      const ans=inp.dataset.ans.replace(/&quot;/g,'"');
+      inp.value=ans;
+      cell.classList.remove('bad');
+      cell.classList.add('ok');
+    });
+  });
+  const fbEl=$id('fb-trace-'+idx);
+  fbEl.className='fb on hint';
+  fbEl.innerHTML=`<strong>Answers revealed — review each row carefully.</strong> <span class="ex">${data.expl}</span>`;
+  // Show Next button so student can proceed manually — do NOT auto-call markExDone
+  // (that would jump straight to the completion screen on the last exercise)
+  $id('trace-next-'+idx).style.display='inline-flex';
+}
+
 // ══════════════════════════════════════
-// INIT
+// INIT — load saved progress then build
 // ══════════════════════════════════════
+loadProgress();
 buildHome();
 </script>
 </body>
