@@ -711,6 +711,8 @@ function buildTabs(){
 
 function renderEx(idx){
   G.currentEx=idx;
+  // Clear MCQ state so answers from a previous module/exercise don't block clicks
+  Object.keys(mcqSel).forEach(k => delete mcqSel[k]);
   buildTabs();
   const m=G.currentMod;
   const ex=m.exercises[idx];
